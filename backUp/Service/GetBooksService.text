@@ -1,0 +1,25 @@
+package com.books_recommend.book_recommend.service;
+
+import com.books_recommend.book_recommend.dto.BookDto;
+import com.books_recommend.book_recommend.repository.BookRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class GetBooksService {
+    private final BookRepository repository;
+
+    @Transactional(readOnly = true)
+    public List<BookDto> getBooks(){
+        var books = repository
+                .findAll();
+
+        return books.stream()
+                .map(BookDto::fromEntity)
+                .toList();
+    }
+}
