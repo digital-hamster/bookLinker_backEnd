@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CreateMemberService {
+public class MemberService {
     private final MemberRepository repository;
 
     public MemberDto createMember(Requirement requirement){
