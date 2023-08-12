@@ -2,7 +2,7 @@ package com.books_recommend.book_recommend.controller;
 
 import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.MemberDto;
-import com.books_recommend.book_recommend.service.CreateMemberService;
+import com.books_recommend.book_recommend.service.MemberService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/members")
 @RequiredArgsConstructor
-class CreateMemberController {
-    private final CreateMemberService service;
+class MemberController {
+    private final MemberService service;
 
     @PostMapping
     ApiResponse<Response> createMember(@RequestBody Request request){
@@ -32,8 +32,8 @@ class CreateMemberController {
             @NotBlank(message = "password는 필수입니다.")
             String password
     ) {
-        public CreateMemberService.Requirement toRequirement(){
-            return new CreateMemberService.Requirement(email,
+        public MemberService.Requirement toRequirement(){
+            return new MemberService.Requirement(email,
                     nickname,
                     password);
         }
