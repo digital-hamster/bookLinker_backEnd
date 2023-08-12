@@ -1,0 +1,47 @@
+package com.books_recommend.book_recommend.controller;
+
+import com.books_recommend.book_recommend.dto.BookDto;
+import com.books_recommend.book_recommend.service.CreateBookService;
+import com.books_recommend.book_recommend.common.web.ApiResponse;
+import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+//TODO 이미지 연결 => 서버 빌드업 다음에!
+//TODO 멤버 id 받아서 연결 -> 나중에 토큰으로 바꾸기
+
+@RestController
+@RequestMapping("/books/{memberId}")
+@RequiredArgsConstructor
+class CreateBookController {
+    private final CreateBookService service;
+
+    @PostMapping
+    ApiResponse<Response> createBook(@RequestBody Request request, @PathVariable Long memberId){
+        BookDto bookDto = service.createBook(request.toRequirement(), memberId);
+
+        Response response = new Response(bookDto.id());
+        return ApiResponse.success(response);
+    }
+
+    record Request(
+            @NotBlank(message = "책 제목을 입력해 주세요.")
+            String title,
+            @NotBlank(message = "추천 내용을 입력해 주세요.")
+            String content,
+            @NotBlank(message = "링크를 기입해 주세요.")
+            String link,
+            @NotBlank(message = "이미지 파일을 기입해 주세요")
+            String image
+    ){
+        public CreateBookService.Requirement toRequirement(){
+            return new CreateBookService.Requirement(title,
+                    content,
+                    link,
+                    image);
+        }
+     }
+    record Response(
+            Long bookId
+    ){}
+}
