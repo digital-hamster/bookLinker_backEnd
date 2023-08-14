@@ -1,0 +1,46 @@
+package com.books_recommend.book_recommend.controller;
+
+import com.books_recommend.book_recommend.dto.BookDto;
+import com.books_recommend.book_recommend.dto.BookListDto;
+import com.books_recommend.book_recommend.service.GetBookListService;
+import com.books_recommend.book_recommend.common.web.ApiResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/booklists")
+@RequiredArgsConstructor
+class GetBookListController {
+    private final GetBookListService service;
+    //getOne
+    @GetMapping("/{listId}")
+    ApiResponse<BookListResponse> getList(@PathVariable Long listId){
+        var list = service.getList(listId);
+        BookListResponse response = BookListResponse.to(list);
+        return ApiResponse.success(response);
+    }
+
+    record BookListResponse(
+            Long listId,
+            String title,
+            String backImg,
+            String content,
+            List<BookDto> books
+    ){
+        static BookListResponse to(BookListDto listDto){
+            return new BookListResponse(
+                    listDto.bookListId(),
+                    listDto.title(),
+                    listDto.backImg(),
+                    listDto.content(),
+                    listDto.books()
+            );
+        }
+    }
+
+}

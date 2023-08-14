@@ -1,0 +1,45 @@
+package com.books_recommend.book_recommend.controller;
+
+import com.books_recommend.book_recommend.dto.BookListDto;
+import com.books_recommend.book_recommend.service.CreateBookListService;
+import com.books_recommend.book_recommend.common.web.ApiResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/bookLists/{memberId}")
+@RequiredArgsConstructor
+public class CreateBookListController {
+    private final CreateBookListService service;
+
+    @PostMapping
+    ApiResponse<Response> createBookList(@RequestBody Request request
+            ,@PathVariable Long memberId){
+
+        BookListDto listDto = service.create(request.toRequirement(), memberId);
+
+        Response response = new Response(listDto.bookListId());
+        return ApiResponse.success(response);
+    }
+
+    record Request(
+            List<Long> bookIds, // 클라이언트로부터 책 ID 리스트만 받아오기
+            String title,
+            String backImg,
+            String content
+    ) {
+        public CreateBookListService.Requirement toRequirement() {
+            return new CreateBookListService.Requirement(
+                    bookIds,
+                    title,
+                    backImg,
+                    content
+            );
+        }
+    }
+    record Response(
+            Long id
+    ) {}
+}

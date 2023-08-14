@@ -1,0 +1,25 @@
+package com.books_recommend.book_recommend.service;
+
+import com.books_recommend.book_recommend.dto.BookListDto;
+import com.books_recommend.book_recommend.repository.BookListRepository;
+import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
+import com.books_recommend.book_recommend.common.exception.ExceptionCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class GetBookListService {
+    private final BookListRepository repository;
+
+    @Transactional(readOnly = true)
+    public BookListDto getList(Long listId){
+        var list = repository
+                .findById(listId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+
+        return BookListDto.fromEntity(list);
+    }
+
+}
