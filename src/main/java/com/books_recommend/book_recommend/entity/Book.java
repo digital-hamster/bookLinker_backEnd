@@ -40,7 +40,7 @@ public class Book extends BaseTimeEntity {
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "bookList_id")
-    private BookList bookList; //bookList
+    private BookList bookList;
 
 
     public Book(String title,

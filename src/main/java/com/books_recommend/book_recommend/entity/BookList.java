@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Entity(name = "list")
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -53,22 +52,5 @@ public class BookList extends BaseTimeEntity{
             member.getBookLists().add(this);
         }
     }
-
-//    public void addBook(Book book) {
-//        books.add(book);
-//        book.addBookList(this);
-//    }
-//
-//    public void addBooks(List<Book> books) {
-//        this.books.addAll(books);
-//        for (Book book : books) {
-//            if (!book.getBookList().equals(this)) {
-//                book.addBookList(this);
-//            }
-//        }
-
-//    public void addBook(Book book){
-//        this.book
-//    }
-    }
+}
 

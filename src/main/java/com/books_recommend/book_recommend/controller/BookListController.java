@@ -26,7 +26,7 @@ public class BookListController {
     }
 
     record CreateRequest(
-        List<Long> bookIds, // 클라이언트로부터 책 ID 리스트만 받아오기
+        List<Long> bookIds,
         String title,
         String backImg,
         String content
@@ -43,7 +43,6 @@ public class BookListController {
     record CreateBookListResponse(
         Long id
     ) {}
-
 
     @GetMapping("/{listId}")
     ApiResponse<GetBookListResponse> getList(@PathVariable Long listId){

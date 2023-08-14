@@ -28,14 +28,13 @@ public class BookListService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
 
-        var books = bookRepository.findAllById(requirement.bookIds()); //이건 책의 정보(book)이지 bookList가 아님
+        var books = bookRepository.findAllById(requirement.bookIds());
 
-        //requirement를 entity로 바꿔서 books를 담자
         var list = requirement.toEntity();
 
         list.addMember(member);
         for (Book book : books) {
-            book.addBookList(list); // 각 Book 객체의 bookList 연관관계 설정
+            book.addBookList(list);
         }
 
         var savedList = bookListrepository.save(list);
@@ -56,7 +55,6 @@ public class BookListService {
             );
         }
     }
-
 
     //get
     @Transactional(readOnly = true)
