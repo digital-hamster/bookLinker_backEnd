@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -44,9 +42,6 @@ public class Book extends BaseTimeEntity {
     @JoinColumn(name = "bookList_id")
     private BookList bookList; //bookList
 
-//    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-//    private List<BookListInfo> bookListInfo = new ArrayList<>();
-
 
     public Book(String title,
                 String content,
@@ -67,6 +62,14 @@ public class Book extends BaseTimeEntity {
         this.member = member;  // 현재 Book 엔티티에 Member를 설정
         if (!member.getBooks().contains(this)) {
             member.getBooks().add(this);  // Member 엔티티에도 현재 Book을 추가
+        }
+    }
+
+    //booklist 양방향 관계를 설정
+    public void addBookList(BookList bookList) {
+        this.bookList = bookList;
+        if (!bookList.getBooks().contains(this)) {
+            bookList.getBooks().add(this);
         }
     }
 
