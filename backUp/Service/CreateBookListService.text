@@ -1,0 +1,53 @@
+package com.books_recommend.book_recommend.service;
+
+import com.books_recommend.book_recommend.entity.Book;
+import com.books_recommend.book_recommend.repository.BookRepository;
+import com.books_recommend.book_recommend.dto.BookListDto;
+import com.books_recommend.book_recommend.entity.BookList;
+import com.books_recommend.book_recommend.repository.BookListRepository;
+import com.books_recommend.book_recommend.entity.Member;
+import com.books_recommend.book_recommend.repository.MemberRepository;
+import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
+import com.books_recommend.book_recommend.common.exception.ExceptionCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CreateBookListService {
+    private final BookRepository bookRepository;
+    private final BookListRepository repository;
+    private final MemberRepository memberRepository;
+
+    @Transactional
+    public BookListDto create(Requirement requirement, Long memberId){
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+
+        List<Book> books = bookRepository.findAllById(requirement.bookIds());
+        BookList list = requirement.toEntity(books);
+        list.addMember(member);
+
+        BookList savedList = repository.save(list);
+        return BookListDto.fromEntity(savedList, books);
+    }
+
+    public record Requirement(
+            List<Long> bookIds,
+            String title,
+            String backImg,
+            String content
+    ){
+        public BookList toEntity(List<Book> books){
+            return new BookList(
+                    books,
+                    title,
+                    backImg,
+                    content
+            );
+        }
+    }
+}
