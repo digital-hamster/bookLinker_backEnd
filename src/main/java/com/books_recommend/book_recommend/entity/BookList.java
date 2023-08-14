@@ -28,6 +28,10 @@ public class BookList extends BaseTimeEntity{
     private String content;
 
     @Column
+    private String hashTag; //content2 느낌
+    //해시태그 받을 때 띄어쓰기 안됨 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+
+    @Column
     @OneToMany(mappedBy = "bookList", cascade = CascadeType.REMOVE)
     private List<Book> books = new ArrayList<>();
     //1. 봐바 이건 연관관계임, 담는 관계를 보면 book을 리스트로 저장하겟다는거임
@@ -39,10 +43,12 @@ public class BookList extends BaseTimeEntity{
     public BookList(
             String title,
             String content,
+            String hashTag,
             String backImg
     ){
         this.title = title;
         this.content = content;
+        this.hashTag = hashTag;
         this.backImg = backImg;
     }
 

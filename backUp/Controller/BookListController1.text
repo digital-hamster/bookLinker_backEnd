@@ -1,16 +1,15 @@
+//create 수정 전
+
 package com.books_recommend.book_recommend.controller;
 
 import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
-import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.service.BookListService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/booklists")
@@ -24,64 +23,27 @@ public class BookListController {
 
         var listDto = service.create(request.toRequirement(), memberId);
 
-        var response = new CreateBookListResponse(listDto.bookListId(), listDto.books());
-
+        var response = new CreateBookListResponse(listDto.bookListId());
         return ApiResponse.success(response);
     }
     record CreateRequest(
+        List<Long> bookIds,
         String title,
         String backImg,
-        String content,
-        String hashTag,
-
-        List<BooksRequest> books
-
+        String content
     ) {
         public BookListService.CreateRequirement toRequirement() {
-            var booksRequirements =
-                books.stream()
-                    .map(BooksRequest::toBooksRequirement)
-                    .collect(Collectors.toList());
-
             return new BookListService.CreateRequirement(
+                bookIds,
                 title,
                 backImg,
-                content,
-                hashTag,
-                booksRequirements
+                content
             );
         }
     }
-
-    record BooksRequest(
-        @NotBlank(message = "책 제목을 입력해 주세요.")
-        String title,
-
-        @NotBlank(message = "추천 내용을 입력해 주세요.")
-        String content,
-
-        @NotBlank(message = "링크를 기입해 주세요.")
-        String link,
-
-        @NotBlank(message = "이미지 파일을 기입해 주세요")
-        String image
-    ){
-        public BookListService.BooksRequirement toBooksRequirement(){
-            return new BookListService.BooksRequirement(
-                title,
-                content,
-                link,
-                image
-            );
-        }
-    }
-
     record CreateBookListResponse(
-        Long ListId,
-        List<BookDto> bookDtos
+        Long id
     ){}
-
-
 
     @GetMapping("/{listId}")
     ApiResponse<GetBookListResponse> getList(@PathVariable Long listId){
@@ -95,7 +57,7 @@ public class BookListController {
         String title,
         String backImg,
         String content,
-        List<BookDto> bookDtos
+        List<BookDto> books
     ){
         static BookListController.GetBookListResponse to(BookListDto listDto){
             return new BookListController.GetBookListResponse(
@@ -108,3 +70,7 @@ public class BookListController {
         }
     }
 }
+
+    검색 api는 2개가 필요
+    태그 검색을 하는 요청 1개
+    제목 검색을 하는 요청 1개

@@ -36,9 +36,9 @@ public class Member extends BaseTimeEntity {
     @Column
     private LocalDateTime deletedAt;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<Book> books = new ArrayList<>(); //bookEntity에서 getMember()를 하기 위해 books 초기화 먼저 시킴
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+//    private List<Book> books = new ArrayList<>(); //bookEntity에서 getMember()를 하기 위해 books 초기화 먼저 시킴
 
     @JsonIgnore
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

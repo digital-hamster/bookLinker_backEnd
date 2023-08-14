@@ -13,6 +13,7 @@ public record BookListDto (
     Long memberId,
     String title,
     String content,
+    String hashTag,
     String backImg
 ){
     //for other
@@ -27,18 +28,24 @@ public record BookListDto (
                 list.getMember().getId(),
                 list.getTitle(),
                 list.getContent(),
+                list.getHashTag(),
                 list.getBackImg()
         );
     }
 
     //for create
         public static BookListDto fromEntity(BookList savedList, List<Book> books) {
+            List<BookDto> bookDtos = books.stream()
+                .map(BookDto::fromEntity)
+                .collect(Collectors.toList());
+
         return new BookListDto(
-                books.stream().map(BookDto::fromEntity).collect(Collectors.toList()),
+                bookDtos,
                 savedList.getId(),
                 savedList.getMember().getId(),
                 savedList.getTitle(),
                 savedList.getContent(),
+                savedList.getHashTag(),
                 savedList.getBackImg()
         );
     }
