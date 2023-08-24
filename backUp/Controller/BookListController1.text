@@ -5,7 +5,7 @@ package com.books_recommend.book_recommend.controller;
 import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
-import com.books_recommend.book_recommend.service.BookListService;
+import com.books_recommend.book_recommend.service.BookListService2;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
