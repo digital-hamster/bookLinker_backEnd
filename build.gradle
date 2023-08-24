@@ -28,8 +28,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	//h2
+	//db
 	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'mysql:mysql-connector-java:8.0.29' //application.yml "driver-class-name" 연결을 위함
 
 	//@Transactional: readOnly
 	implementation 'org.springframework:spring-tx'
