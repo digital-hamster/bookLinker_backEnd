@@ -2,10 +2,10 @@ package com.books_recommend.book_recommend.service;
 
 import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
+import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.entity.BookList;
-import com.books_recommend.book_recommend.entity.Member;
 import com.books_recommend.book_recommend.repository.BookListRepository;
 import com.books_recommend.book_recommend.repository.BookRepository;
 import com.books_recommend.book_recommend.repository.MemberRepository;
@@ -14,55 +14,99 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BookListService {
-    private final BookRepository bookRepository;
-    private final BookListRepository bookListrepository;
+    private final BookListRepository bookListRepository;
     private final MemberRepository memberRepository;
+    private final BookRepository bookRepository;
 
-    //create
     @Transactional
-    public BookListDto create(CreateRequirement requirement, Long memberId){
-        Member member = memberRepository.findById(memberId)
+    public Long create(CreateRequirement requirement, Long memberId){
+        var member = memberRepository.findById(memberId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
 
-        var books = bookRepository.findAllById(requirement.bookIds());
+        var bookList = createBookList(requirement);
+        var books = createBooks(requirement, bookList);
 
-        var list = requirement.toEntity();
+        bookList.addBooks(books);
+        bookList.addMember(member);
 
-        list.addMember(member);
-        for (Book book : books) {
-            book.addBookList(list);
-        }
+        var savedBookList = bookListRepository.save(bookList);
+        bookRepository.saveAll(books); //자동적으로 books 저장이 안됨
 
-        var savedList = bookListrepository.save(list);
-        return BookListDto.fromEntity(savedList, books);
+        return savedBookList.getId();
+    }
+    private static List<Book> createBooks(CreateRequirement requirement, BookList bookList){
+        return requirement.booksRequest.stream()
+            .map(bookRequirement -> new Book(
+                bookList,
+                bookRequirement.bookName,
+                bookRequirement.content,
+                bookRequirement.link,
+                bookRequirement.image
+            ))
+            .toList();
+    }
+
+    private static BookList createBookList(CreateRequirement requirement){
+        return new BookList(
+            requirement.title,
+            requirement.content,
+            requirement.hashTag,
+            requirement.backImg
+        );
     }
 
     public record CreateRequirement(
-        List<Long> bookIds,
         String title,
+        String content,
+        String hashTag,
         String backImg,
-        String content
+        List<BookRequirement> booksRequest
     ){
-        public BookList toEntity(){
-            return new BookList(
-                title,
-                backImg,
-                content
-            );
-        }
+        public record BookRequirement(
+            String bookName,
+            String content,
+            String link,
+            String image
+        ){}
     }
 
-    //get
     @Transactional(readOnly = true)
-    public BookListDto getList(Long listId){
-        var list = bookListrepository
-            .findById(listId)
-            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+    public List<BookListDto> findAllLists() {
+        List<BookList> lists = bookListRepository.findAll();
 
-        return BookListDto.fromEntity(list);
+        return lists.stream()
+            .map(BookListService::toListDto)
+            .collect(Collectors.toList());
+    }
+
+    private static BookListDto toListDto(BookList list) {
+        List<BookDto> bookDtos = list.getBooks().stream()
+            .map(BookListService::toBookDto)
+            .collect(Collectors.toList());
+
+        return new BookListDto(
+            bookDtos,
+            list.getId(),
+            list.getMember().getId(),
+            list.getTitle(),
+            list.getContent(),
+            list.getHashTag(),
+            list.getBackImg()
+        );
+    }
+
+    private static BookDto toBookDto(Book book) {
+        return new BookDto(
+            book.getId(),
+            book.getTitle(),
+            book.getContent(),
+            book.getLink(),
+            book.getImage()
+        );
     }
 }

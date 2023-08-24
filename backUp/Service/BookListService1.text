@@ -1,0 +1,85 @@
+
+//create 수정 전
+package com.books_recommend.book_recommend.service;
+
+import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
+import com.books_recommend.book_recommend.common.exception.ExceptionCode;
+import com.books_recommend.book_recommend.dto.BookListDto;
+import com.books_recommend.book_recommend.entity.Book;
+import com.books_recommend.book_recommend.entity.BookList;
+import com.books_recommend.book_recommend.entity.Member;
+import com.books_recommend.book_recommend.repository.BookListRepository;
+import com.books_recommend.book_recommend.repository.BookRepository;
+import com.books_recommend.book_recommend.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class BookListService {
+    private final BookRepository bookRepository;
+    private final BookListRepository bookListrepository;
+    private final MemberRepository memberRepository;
+
+    //create
+    @Transactional
+    public BookListDto create(CreateRequirement requirement, Long memberId){
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+
+        var books = bookRepository.findAllById(requirement.bookIds());
+
+        var list = requirement.toEntity();
+
+        list.addMember(member);
+        for (Book book : books) {
+            book.addBookList(list);
+        }
+
+        var savedList = bookListrepository.save(list);
+        return BookListDto.fromEntity(savedList, books);
+    }
+
+    public record CreateRequirement(
+        List<Long> bookIds,
+        String title,
+        String backImg,
+        String content
+    ){
+        public BookList toEntity(){
+            return new BookList(
+                title,
+                backImg,
+                content
+            );
+        }
+    }
+
+    //get
+    @Transactional(readOnly = true)
+    public BookListDto getList(Long listId){
+        var list = bookListrepository
+            .findById(listId)
+            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+
+        return BookListDto.fromEntity(list);
+    }
+
+//    //update
+//    @Transactional
+//    public BookListDto updateList(Long listId, Long userId, UpdateRequirement requirement){
+//
+//
+//        return null;
+//    }
+//    public record UpdateRequirement(
+//        List<Long> bookIds,
+//        String title,
+//        String backImg,
+//        String content
+//    ){}
+
+}

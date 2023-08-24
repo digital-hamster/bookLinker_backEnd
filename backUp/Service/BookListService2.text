@@ -1,0 +1,118 @@
+package com.books_recommend.book_recommend.service;
+
+import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
+import com.books_recommend.book_recommend.common.exception.ExceptionCode;
+import com.books_recommend.book_recommend.entity.Book;
+import com.books_recommend.book_recommend.entity.BookList;
+import com.books_recommend.book_recommend.entity.Member;
+import com.books_recommend.book_recommend.repository.BookListRepository;
+import com.books_recommend.book_recommend.repository.BookRepository;
+import com.books_recommend.book_recommend.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class BookListService2 {
+    private final BookRepository bookRepository;
+    private final BookListRepository bookListrepository;
+    private final MemberRepository memberRepository;
+
+    //create
+    @Transactional
+    public Long create(CreateRequirement requirement, Long memberId){
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+
+//        var books = bookRepository.findAllById(requirement.books());
+        //ㄴ> 이제 id를 받아올 필요가 없
+
+        var list = createBookList(requirement);
+        var books = createBooks(requirement, list);
+
+        list.addMember(member);
+        list.addBooks(books);
+
+        var savedList = bookListrepository.save(list);
+        return savedList.getId();
+    }
+
+    private static List<Book> createBooks(CreateRequirement requirement, BookList list) {
+        return requirement.books().stream()
+            .map(bookRequirement -> new Book(
+                list,
+                bookRequirement.title,
+                bookRequirement.content,
+                bookRequirement.link,
+                bookRequirement.image
+            ))
+            .toList();
+    }
+
+    private BookList createBookList(CreateRequirement requirement){
+        return new BookList(
+            requirement.title,
+            requirement.content,
+            requirement.hashTag,
+            requirement.backImg
+        );
+    }
+
+    public record CreateRequirement(
+        String title,
+        String content,
+        String hashTag,
+        String backImg,
+        List<BooksRequirement> books
+    ){
+        public BookList toEntity(){
+            return new BookList(
+                title,
+                content,
+                hashTag,
+                backImg
+            );
+        }
+
+        public record BooksRequirement(
+            String title,
+            String content,
+            String link,
+            String image
+        ){
+            public Book toEntity(BookList bookList){
+                return new Book(
+                    bookList,
+                    title,
+                    content,
+                    link,
+                    image
+                );
+            }
+        }
+    }
+}
+
+//        public static List<Book> createBooks(CreateRequirement requirement, BookList bookList) {
+//            return requirement.books().stream()
+//                .map(bookRequirement -> bookRequirement.toEntity(bookList))
+//                .toList();
+//        }
+
+
+
+
+
+//    //get
+//    @Transactional(readOnly = true)
+//    public BookListDto getList(Long listId){
+//        var list = bookListrepository
+//            .findById(listId)
+//            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+//
+//        return BookListDto.fromEntity(list);
+//    }
+

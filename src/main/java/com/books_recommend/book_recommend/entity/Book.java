@@ -32,21 +32,22 @@ public class Book extends BaseTimeEntity {
     @Column(name= "deleted_at")
     private LocalDateTime deletedAt;
 
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
+//    @JsonIgnore
+//    @ManyToOne
+//    @JoinColumn(name = "member_id")
+//    private Member member;
 
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "bookList_id")
     private BookList bookList;
 
-
-    public Book(String title,
+    public Book(BookList bookList,
+                String title,
                 String content,
                 String link,
                 String image){
+        this.bookList = bookList;
         this.title = title;
         this.content = content;
         this.link = link;
@@ -57,14 +58,6 @@ public class Book extends BaseTimeEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
-    //외래키 추가
-    public void addMember(Member member) {
-        this.member = member;  // 현재 Book 엔티티에 Member를 설정
-        if (!member.getBooks().contains(this)) {
-            member.getBooks().add(this);  // Member 엔티티에도 현재 Book을 추가
-        }
-    }
-
     //booklist 양방향 관계를 설정
     public void addBookList(BookList bookList) {
         this.bookList = bookList;
@@ -72,5 +65,4 @@ public class Book extends BaseTimeEntity {
             bookList.getBooks().add(this);
         }
     }
-
 }

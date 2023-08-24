@@ -1,0 +1,104 @@
+package com.books_recommend.book_recommend.controller;
+
+import com.books_recommend.book_recommend.common.web.ApiResponse;
+import com.books_recommend.book_recommend.service.BookListService2;
+import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/booklists")
+@RequiredArgsConstructor
+public class BookListController2 {
+    private final BookListService2 service;
+
+    @PostMapping("/{memberId}")
+    ApiResponse<CreateResponse> createBookList(@RequestBody CreateRequest request
+        ,@PathVariable Long memberId){
+
+        var listId = service.create(request.toRequirement(), memberId);
+
+        var response = new CreateResponse(listId);
+
+        return ApiResponse.success(response);
+    }
+    record CreateRequest(
+        String title,
+        String backImg,
+        String content,
+        String hashTag,
+
+        List<BooksRequest> books
+
+    ) {
+        public BookListService2.CreateRequirement toRequirement() {
+            var booksRequirements =
+                books.stream()
+                    .map(BooksRequest::toBooksRequirement)
+                    .collect(Collectors.toList());
+
+            return new BookListService2.CreateRequirement(
+                title,
+                backImg,
+                content,
+                hashTag,
+                booksRequirements
+            );
+        }
+    }
+
+    record BooksRequest(
+        @NotBlank(message = "책 제목을 입력해 주세요.")
+        String title,
+
+        @NotBlank(message = "추천 내용을 입력해 주세요.")
+        String content,
+
+        @NotBlank(message = "링크를 기입해 주세요.")
+        String link,
+
+        @NotBlank(message = "이미지 파일을 기입해 주세요")
+        String image
+    ){
+        public BookListService2.CreateRequirement.BooksRequirement toBooksRequirement(){
+            return new BookListService2.CreateRequirement.BooksRequirement(
+                title,
+                content,
+                link,
+                image
+            );
+        }
+    }
+    record CreateResponse(
+        Long listId
+    ){}
+
+
+//    @GetMapping("/{listId}")
+//    ApiResponse<GetBookListResponse> getList(@PathVariable Long listId){
+//        var list = service.getList(listId);
+//        var response = GetBookListResponse.to(list);
+//        return ApiResponse.success(response);
+//    }
+//
+//    record GetBookListResponse(
+//        Long listId,
+//        String title,
+//        String backImg,
+//        String content,
+//        List<BookDto> bookDtos
+//    ){
+//        static BookListController.GetBookListResponse to(BookListDto listDto){
+//            return new BookListController.GetBookListResponse(
+//                listDto.bookListId(),
+//                listDto.title(),
+//                listDto.backImg(),
+//                listDto.content(),
+//                listDto.books()
+//            );
+//        }
+//    }
+}

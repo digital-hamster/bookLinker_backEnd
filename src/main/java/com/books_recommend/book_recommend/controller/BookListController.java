@@ -8,64 +8,105 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/booklists")
 @RequiredArgsConstructor
-public class BookListController {
+class BookListController {
     private final BookListService service;
 
     @PostMapping("/{memberId}")
-    ApiResponse<CreateBookListResponse> createBookList(@RequestBody CreateRequest request
-        ,@PathVariable Long memberId){
+    ApiResponse<CreateResponse> createBookList(@RequestBody CreateRequest request,
+                                               @PathVariable Long memberId) {
+        var bookListId = service.create(request.toCreateRequirement(), memberId);
 
-        var listDto = service.create(request.toRequirement(), memberId);
-
-        var response = new CreateBookListResponse(listDto.bookListId());
+        var response = new CreateResponse(bookListId);
         return ApiResponse.success(response);
     }
 
     record CreateRequest(
-        List<Long> bookIds,
         String title,
+        String content,
+        String hashTag,
         String backImg,
-        String content
+        List<BookRequest> books
     ) {
-        public BookListService.CreateRequirement toRequirement() {
+        private BookListService.CreateRequirement toCreateRequirement() {
+            var booksRequirements = books.stream()
+                .map(books -> new BookListService.CreateRequirement.BookRequirement(
+                    books.bookName,
+                    books.content,
+                    books.link,
+                    books.image
+                ))
+                .collect(Collectors.toList());
+
             return new BookListService.CreateRequirement(
-                bookIds,
                 title,
+                content,
+                hashTag,
                 backImg,
-                content
+                booksRequirements
             );
         }
-    }
-    record CreateBookListResponse(
-        Long id
-    ) {}
 
-    @GetMapping("/{listId}")
-    ApiResponse<GetBookListResponse> getList(@PathVariable Long listId){
-        var list = service.getList(listId);
-        var response = GetBookListResponse.to(list);
-        return ApiResponse.success(response);
+        record BookRequest(
+            String bookName,
+            String content,
+            String link,
+            String image
+        ) {
+        }
     }
 
-    record GetBookListResponse(
-        Long listId,
+    record CreateResponse(
+        Long bookListId
+    ) {
+    }
+
+
+
+    @GetMapping
+    ApiResponse<List<GetResponse>> getBookLists(){
+        List<BookListDto> lists = service.findAllLists();
+        List<GetResponse> responses = GetResponse.from(lists);
+
+        return ApiResponse.success(responses);
+    }
+    record GetResponse(
+        Long bookListId,
+        Long memberId,
         String title,
-        String backImg,
         String content,
+        String hashTag,
+        String backImg,
         List<BookDto> books
-    ){
-        static BookListController.GetBookListResponse to(BookListDto listDto){
-            return new BookListController.GetBookListResponse(
-                listDto.bookListId(),
-                listDto.title(),
-                listDto.backImg(),
-                listDto.content(),
-                listDto.books()
-            );
+    ) {
+        private static List<GetResponse> from(List<BookListDto> listDtos) {
+            return listDtos.stream()
+                .map(listDto -> {
+                    List<BookDto> bookDtos = listDto.books().stream()
+                        .map(book -> new BookDto(
+                            book.id(),
+                            book.title(),
+                            book.content(),
+                            book.link(),
+                            book.image()
+                        ))
+                        .collect(Collectors.toList());
+
+                    return new GetResponse(
+                        listDto.bookListId(),
+                        listDto.memberId(),
+                        listDto.title(),
+                        listDto.content(),
+                        listDto.hashTag(),
+                        listDto.backImg(),
+                        bookDtos
+                    );
+                })
+                .collect(Collectors.toList());
         }
     }
 }
