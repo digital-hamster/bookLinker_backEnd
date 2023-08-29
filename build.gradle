@@ -37,6 +37,9 @@ dependencies {
 
 	//@MotNull
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	//@ConfigurationProperties
+	implementation 'org.springframework.boot:spring-boot-configuration-processor'
 }
 
 tasks.named('test') {
