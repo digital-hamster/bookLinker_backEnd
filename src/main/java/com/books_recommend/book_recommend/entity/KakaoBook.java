@@ -14,20 +14,20 @@ public class KakaoBook {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 500)
+    @Column(length = 50)
     private String title;
 
-    @Column(length = 500)
+    @Column(length = 50)
     private String authors;
 
-    @Column(length = 500)
+    @Column(length = 50)
     private String isbn;
 
-    @Column(length = 500)
+    @Column(length = 50)
     private String publisher;
 
     @Column(length = 500)
-    private String thumbnail; //image
+    private String image; //thumbnail
 
     @Column(length = 500)
     private String url;
@@ -37,14 +37,14 @@ public class KakaoBook {
         String authors,
         String isbn,
         String publisher,
-        String thumbnail,
+        String image,
         String url
     ){
         this.title = title;
         this.authors = authors;
         this.isbn = isbn;
         this.publisher = publisher;
-        this.thumbnail = thumbnail;
+        this.image = image;
         this.url = url;
     }
 
@@ -52,7 +52,7 @@ public class KakaoBook {
         this.title = newBook.getTitle();
         this.authors = newBook.getAuthors();
         this.publisher = newBook.getPublisher();
-        this.thumbnail = newBook.getThumbnail();
+        this.image = newBook.getImage();
         this.url = newBook.getUrl();
     }
 }

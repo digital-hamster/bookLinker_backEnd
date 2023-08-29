@@ -5,7 +5,7 @@ import com.books_recommend.book_recommend.common.properties.KakaoProperties;
 import com.books_recommend.book_recommend.dto.KakaoBookDto;
 import com.books_recommend.book_recommend.entity.KakaoBook;
 import com.books_recommend.book_recommend.repository.KakaoBookRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,18 +22,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class KakaoApiService {
 
     private final KakaoProperties kakaoProperties;
     private final RestTemplate restTemplate;
     private final KakaoBookRepository repository;
-
-    @Autowired
-    public KakaoApiService(KakaoProperties kakaoProperties, RestTemplate restTemplate, KakaoBookRepository repository) {
-        this.kakaoProperties = kakaoProperties;
-        this.restTemplate = restTemplate;
-        this.repository = repository;
-    }
 
     public List<KakaoBookDto> callApiAndSaveToDatabase(String query) {
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -52,22 +46,24 @@ public class KakaoApiService {
         List<Map<String, Object>> bookDataList = (List<Map<String, Object>>) result.getBody().get("documents");
         List<KakaoBook> savedBooks = mapToKakaoBooks(bookDataList);
 
-        updateOrCreateBooks(savedBooks);
-
-        return mapEntitiesToDtos(savedBooks);
-    }
-
-    private void updateOrCreateBooks(List<KakaoBook> savedBooks) {
+        // 저장된 KakaoBook 리스트를 레포지토리에 저장 / 업데이트
         for (KakaoBook savedBook : savedBooks) {
             KakaoBook existingBook = repository.findByIsbn(savedBook.getIsbn());
             if (existingBook != null) {
-                existingBook.updateFrom(savedBook);
-                repository.save(existingBook);
+                updateExistingBook(existingBook, savedBook);
             } else {
                 repository.save(savedBook);
             }
         }
+
+        return mapEntitiesToDtos(savedBooks);
     }
+
+    private void updateExistingBook(KakaoBook existingBook, KakaoBook newBook) {
+        existingBook.updateFrom(newBook);
+        repository.save(existingBook);
+    }
+
 
     private List<KakaoBook> mapToKakaoBooks(List<Map<String, Object>> bookDataList) {
         List<KakaoBook> books = new ArrayList<>();
@@ -78,10 +74,10 @@ public class KakaoApiService {
                 List<String> authors = (List<String>) bookData.get("authors");
                 String isbn = (String) bookData.get("isbn");
                 String publisher = (String) bookData.get("publisher");
-                String thumbnail = (String) bookData.get("thumbnail");
+                String image = (String) bookData.get("thumbnail");
                 String url = (String) bookData.get("url");
 
-                KakaoBook kakaoBook = new KakaoBook(title, String.join(", ", authors), isbn, publisher, thumbnail, url);
+                KakaoBook kakaoBook = new KakaoBook(title, String.join(", ", authors), isbn, publisher, image, url);
                 books.add(kakaoBook);
             }
         }
@@ -96,7 +92,7 @@ public class KakaoApiService {
                 entity.getAuthors(),
                 entity.getIsbn(),
                 entity.getPublisher(),
-                entity.getThumbnail(),
+                entity.getImage(),
                 entity.getUrl()
             ))
             .collect(Collectors.toList());

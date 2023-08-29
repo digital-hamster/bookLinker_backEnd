@@ -3,7 +3,7 @@ package com.books_recommend.book_recommend.controller;
 import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.KakaoBookDto;
 import com.books_recommend.book_recommend.service.KakaoApiService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,14 +12,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
 class KakaoApiController {
 
     private final KakaoApiService kakaoApiService;
-
-    @Autowired
-    public KakaoApiController(KakaoApiService kakaoApiService) {
-        this.kakaoApiService = kakaoApiService;
-    }
 
     @GetMapping("/kakao")
     public ApiResponse<List<Response>> callApi(@RequestParam String query) {
@@ -30,7 +26,7 @@ class KakaoApiController {
                 bookDto.authors(),
                 bookDto.isbn(),
                 bookDto.publisher(),
-                bookDto.thumbnail(),
+                bookDto.image(),
                 bookDto.url()
             ))
             .collect(Collectors.toList());
@@ -41,7 +37,7 @@ class KakaoApiController {
         String authors,
         String isbn,
         String publisher,
-        String thumbnail, //image
+        String image, //thumbnail
         String url
     ){}
 }
