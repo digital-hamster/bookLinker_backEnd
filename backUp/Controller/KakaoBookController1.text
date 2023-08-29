@@ -1,7 +1,7 @@
 package com.books_recommend.book_recommend.controller;
 
 import com.books_recommend.book_recommend.repository.KakaoBookRepository;
-import com.books_recommend.book_recommend.service.KakaoBookService;
+import com.books_recommend.book_recommend.service.KakaoBookService1;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,21 +17,21 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-@Controller
-@RequiredArgsConstructor
-class KakaoBookController {
-    private final KakaoBookService service;
-
-    @Value("${kakao.key}")
-    private String key;
-
-    @GetMapping("/kakao")
-    public Map<String, Object> callApi(@RequestParam String query) {
-        return service.searchBooks(query, key);
-    }
-}
-
+//
+//@Controller
+//@RequiredArgsConstructor
+//class KakaoBookController {
+//    private final KakaoBookService1 service;
+//
+//    @Value("${kakao.key}")
+//    private String key;
+//
+//    @GetMapping("/kakao")
+//    public Map<String, Object> callApi(@RequestParam String query) {
+//        return service.searchBooks(query, key);
+//    }
+//}
+//
 //public class KakaoBookController {
 //
 //    private final KakaoBookRepository repository;
@@ -56,4 +56,4 @@ class KakaoBookController {
 //        ResponseEntity<Map> result = restTemplate.exchange(targetUrl, HttpMethod.GET, httpEntity, Map.class);
 //        return result.getBody(); //내용 반환
 //    }
-//}
+}

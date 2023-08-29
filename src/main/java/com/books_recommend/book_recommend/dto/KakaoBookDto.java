@@ -13,7 +13,7 @@ public record KakaoBookDto (
 
     String publisher,
 
-    String thumbnail, //image
+    String image, //thumbnail
 
     String url
 ){}
