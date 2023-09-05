@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 //1. 전체 페이지 네이션 적용하기 (get)
@@ -143,6 +144,53 @@ public class BookListService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public GetBookListDto getBookList(Long bookListId) {
+        var list = bookListRepository.findById(bookListId)
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+
+        //TODO 토큰 이후 적용
+//        Member member = null;
+//        if (memberId.isPresent()) {
+//            member = memberRepository.findById(memberId.get())
+//                .orElse(null);
+//        }
+//        var isWriter = isWriter(list, member);
+
+        var books = fromEntity(list);
+        return new GetBookListDto(
+            books,
+            list.getId(),
+//            isWriter,
+            list.getMember().getId(),
+            list.getTitle(),
+            list.getContent(),
+            list.getHashTag(),
+            list.getBackImg());
+    }
+    private static Boolean isWriter(BookList list, Member member){
+        return member != null && Objects.equals(member.getId(), list.getMember().getId());
+    }
+
+    private List<BookDto> fromEntity(BookList list){
+        return list.getBooks().stream()
+            .map(BookDto::fromEntity)
+            .collect(Collectors.toList());
+    }
+
+    public record GetBookListDto(
+        List<BookDto> books,
+        Long bookListId,
+//        Boolean isWriter,
+        Long memberId,
+        String title,
+        String content,
+        String hashTag,
+        String backImg
+    ){}
+
+    //--------------------------
+
     @Transactional
     public Long remove(Long bookListId, Long memberId){
         var member = memberRepository.findById(memberId)
@@ -153,7 +201,8 @@ public class BookListService {
 
         if(!Objects.equals(member.getId(), memberId)){
             throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_DELETE_LIST);
-        }bookList.remove();
+        }
+        bookList.remove();
         return bookList.getId();
     }
 }
