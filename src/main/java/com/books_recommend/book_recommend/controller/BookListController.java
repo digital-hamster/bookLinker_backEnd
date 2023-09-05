@@ -116,4 +116,15 @@ class BookListController {
                 .collect(Collectors.toList());
         }
     }
+
+    @DeleteMapping("/{bookListId}/{memberId}")
+    ApiResponse<DeleteResponse> remove(@PathVariable Long bookListId, @PathVariable Long memberId){
+        var removedId = service.remove(bookListId, memberId);
+        var response = new DeleteResponse(removedId);
+        return ApiResponse.success(response);
+    }
+
+    record DeleteResponse(
+        Long bookListId
+    ){}
 }

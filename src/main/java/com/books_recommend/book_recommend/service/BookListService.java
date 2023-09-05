@@ -15,7 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+//1. 전체 페이지 네이션 적용하기 (get)
+//2. getBooklist(bookListId) 조회하기
+//3. 특정 BookList 검색하기 (title)
 
 @Service
 @RequiredArgsConstructor
@@ -127,5 +132,19 @@ public class BookListService {
             book.getUrl(),
             book.getRecommendation()
         );
+    }
+
+    @Transactional
+    public Long remove(Long bookListId, Long memberId){
+        var member = memberRepository.findById(memberId)
+            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+
+        var bookList = bookListRepository.findById(bookListId)
+            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+
+        if(!Objects.equals(member.getId(), memberId)){
+            throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_DELETE_LIST);
+        }bookList.remove();
+        return bookList.getId();
     }
 }
