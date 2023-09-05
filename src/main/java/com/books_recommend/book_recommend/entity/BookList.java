@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,9 @@ public class BookList extends BaseTimeEntity{
     @OneToMany(mappedBy = "bookList", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 
+    @Column
+    private LocalDateTime deletedAt;
+
     public BookList(
             String title,
             String content,
@@ -66,6 +70,10 @@ public class BookList extends BaseTimeEntity{
         for(Book book : books){
             this.books.add(book);
         }
+    }
+
+    public void remove(){
+        this.deletedAt = LocalDateTime.now();
     }
 }
 
