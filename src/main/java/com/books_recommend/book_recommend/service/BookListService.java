@@ -36,9 +36,17 @@ public class BookListService {
         bookList.addMember(member);
 
         var savedBookList = bookListRepository.save(bookList);
+        addMapping(books, bookList, member);
         bookRepository.saveAll(books); //자동적으로 books 저장이 안됨
 
         return savedBookList.getId();
+    }
+
+    private void addMapping(List<Book> books, BookList bookList, Member member) {
+        books.forEach(book -> {
+            book.addBookList(bookList);
+            book.addMember(member);
+        });
     }
 
     private static List<Book> createBooks(CreateRequirement requirement, BookList bookList){

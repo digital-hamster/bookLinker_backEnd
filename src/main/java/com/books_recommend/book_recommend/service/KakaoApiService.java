@@ -26,7 +26,6 @@ public class KakaoApiService {
 
     private final KakaoProperties kakaoProperties;
     private final RestTemplate restTemplate;
-//    private final KakaoBookRepository repository;
 
     public List<KakaoBookDto> searchBooks(String query) {
         HttpHeaders httpHeaders = new HttpHeaders();

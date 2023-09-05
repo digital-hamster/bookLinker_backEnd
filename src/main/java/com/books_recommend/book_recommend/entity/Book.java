@@ -43,12 +43,12 @@ public class Book extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
 
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "book_list_id")
     private BookList bookList;
 
