@@ -71,8 +71,6 @@ class BookListController {
     ) {
     }
 
-
-
     @GetMapping
     ApiResponse<List<GetResponse>> getBookLists(){
         List<BookListDto> lists = service.findAllLists();
