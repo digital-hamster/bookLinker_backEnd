@@ -19,7 +19,7 @@ class KakaoApiController {
 
     @GetMapping("/kakao")
     public ApiResponse<List<Response>> callApi(@RequestParam String query) {
-        List<KakaoBookDto> savedBooks = kakaoApiService.callApiAndSaveToDatabase(query);
+        List<KakaoBookDto> savedBooks = kakaoApiService.searchBooks(query);
         List<Response> responseList = savedBooks.stream()
             .map(bookDto -> new Response(
                 bookDto.title(),
@@ -34,7 +34,7 @@ class KakaoApiController {
     }
     record Response(
         String title,
-        String authors,
+        List<String> authors,
         String isbn,
         String publisher,
         String image, //thumbnail

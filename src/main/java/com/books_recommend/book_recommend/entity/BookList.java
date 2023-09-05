@@ -65,7 +65,9 @@ public class BookList extends BaseTimeEntity{
     }
 
     public void addBooks(List<Book> books) {
-        this.books.addAll(books);
+        for(Book book : books){
+            this.books.add(book);
+        }
     }
 }
 

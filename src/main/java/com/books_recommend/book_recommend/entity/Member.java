@@ -36,9 +36,9 @@ public class Member extends BaseTimeEntity {
     @Column
     private LocalDateTime deletedAt;
 
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-//    private List<Book> books = new ArrayList<>(); //bookEntity에서 getMember()를 하기 위해 books 초기화 먼저 시킴
+    @JsonIgnore
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<Book> books = new ArrayList<>(); //bookEntity에서 getMember()를 하기 위해 books 초기화 먼저 시킴
 
     @JsonIgnore
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -46,6 +46,10 @@ public class Member extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
     private List<BookList> bookLists = new ArrayList<>();
+
+//    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
+//    private List<KakaoBookList> KakaoBookLists = new ArrayList<>();
+
     @Getter
     @RequiredArgsConstructor
     public enum MemberStatus {
@@ -66,5 +70,10 @@ public class Member extends BaseTimeEntity {
 
     public void remove(){
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void addBook(Book book) {
+        this.books.add(book);
+        book.getMember().getBooks().add(book);
     }
 }

@@ -1,9 +1,11 @@
+//db에 조회한 책들이 저장됨
 package com.books_recommend.book_recommend.service;
 
 
 import com.books_recommend.book_recommend.common.properties.KakaoProperties;
 import com.books_recommend.book_recommend.dto.KakaoBookDto;
-import com.books_recommend.book_recommend.entity.Book;
+import com.books_recommend.book_recommend.entity.KakaoBook;
+import com.books_recommend.book_recommend.repository.KakaoBookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -26,9 +28,9 @@ public class KakaoApiService {
 
     private final KakaoProperties kakaoProperties;
     private final RestTemplate restTemplate;
-//    private final KakaoBookRepository repository;
+    private final KakaoBookRepository repository;
 
-    public List<KakaoBookDto> searchBooks(String query) {
+    public List<KakaoBookDto> callApiAndSaveToDatabase(String query) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Authorization", "KakaoAK " + kakaoProperties.getKey());
         HttpEntity<String> httpEntity = new HttpEntity<>(httpHeaders);
@@ -43,13 +45,29 @@ public class KakaoApiService {
         ResponseEntity<Map> result = restTemplate.exchange(targetUrl, HttpMethod.GET, httpEntity, Map.class);
 
         List<Map<String, Object>> bookDataList = (List<Map<String, Object>>) result.getBody().get("documents");
+        List<KakaoBook> savedBooks = mapToKakaoBooks(bookDataList);
 
-        // KakaoBookDto로 변환하여 반환
-        return mapToKakaoBookDtos(bookDataList);
+        // 저장된 KakaoBook 리스트를 레포지토리에 저장 / 업데이트
+        for (KakaoBook savedBook : savedBooks) {
+            KakaoBook existingBook = repository.findByIsbn(savedBook.getIsbn());
+            if (existingBook != null) {
+                updateExistingBook(existingBook, savedBook);
+            } else {
+                repository.save(savedBook);
+            }
+        }
+
+        return mapEntitiesToDtos(savedBooks);
     }
 
-    private List<KakaoBookDto> mapToKakaoBookDtos(List<Map<String, Object>> bookDataList) {
-        List<KakaoBookDto> bookDtos = new ArrayList<>();
+    private void updateExistingBook(KakaoBook existingBook, KakaoBook newBook) {
+        existingBook.updateFrom(newBook);
+        repository.save(existingBook);
+    }
+
+
+    private List<KakaoBook> mapToKakaoBooks(List<Map<String, Object>> bookDataList) {
+        List<KakaoBook> books = new ArrayList<>();
 
         if (bookDataList != null) {
             for (Map<String, Object> bookData : bookDataList) {
@@ -60,13 +78,27 @@ public class KakaoApiService {
                 String image = (String) bookData.get("thumbnail");
                 String url = (String) bookData.get("url");
 
-                KakaoBookDto bookDto = new KakaoBookDto(title, authors, isbn, publisher, image, url);
-                bookDtos.add(bookDto);
+                KakaoBook kakaoBook = new KakaoBook(title, String.join(", ", authors), isbn, publisher, image, url);
+                books.add(kakaoBook);
             }
         }
 
-        return bookDtos;
+        return books;
     }
+
+    private List<KakaoBookDto> mapEntitiesToDtos(List<KakaoBook> entities) {
+        return entities.stream()
+            .map(entity -> new KakaoBookDto(
+                entity.getTitle(),
+                entity.getAuthors(),
+                entity.getIsbn(),
+                entity.getPublisher(),
+                entity.getImage(),
+                entity.getUrl()
+            ))
+            .collect(Collectors.toList());
+    }
+
 
     private String getKakaoUrl() {
         return "https://dapi.kakao.com/v3/search/book";

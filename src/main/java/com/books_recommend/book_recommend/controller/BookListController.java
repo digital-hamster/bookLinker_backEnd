@@ -35,10 +35,13 @@ class BookListController {
         private BookListService.CreateRequirement toCreateRequirement() {
             var booksRequirements = books.stream()
                 .map(books -> new BookListService.CreateRequirement.BookRequirement(
-                    books.bookName,
-                    books.content,
-                    books.link,
-                    books.image
+                    books.title,
+                    books.authors,
+                    books.isbn,
+                    books.publisher,
+                    books.image,
+                    books.url,
+                    books.recommendation
                 ))
                 .collect(Collectors.toList());
 
@@ -52,10 +55,13 @@ class BookListController {
         }
 
         record BookRequest(
-            String bookName,
-            String content,
-            String link,
-            String image
+            String title,
+            String authors,
+            String isbn,
+            String publisher,
+            String image,
+            String url,
+            String recommendation
         ) {
         }
     }
@@ -67,46 +73,46 @@ class BookListController {
 
 
 
-    @GetMapping
-    ApiResponse<List<GetResponse>> getBookLists(){
-        List<BookListDto> lists = service.findAllLists();
-        List<GetResponse> responses = GetResponse.from(lists);
-
-        return ApiResponse.success(responses);
-    }
-    record GetResponse(
-        Long bookListId,
-        Long memberId,
-        String title,
-        String content,
-        String hashTag,
-        String backImg,
-        List<BookDto> books
-    ) {
-        private static List<GetResponse> from(List<BookListDto> listDtos) {
-            return listDtos.stream()
-                .map(listDto -> {
-                    List<BookDto> bookDtos = listDto.books().stream()
-                        .map(book -> new BookDto(
-                            book.id(),
-                            book.title(),
-                            book.content(),
-                            book.link(),
-                            book.image()
-                        ))
-                        .collect(Collectors.toList());
-
-                    return new GetResponse(
-                        listDto.bookListId(),
-                        listDto.memberId(),
-                        listDto.title(),
-                        listDto.content(),
-                        listDto.hashTag(),
-                        listDto.backImg(),
-                        bookDtos
-                    );
-                })
-                .collect(Collectors.toList());
-        }
-    }
+//    @GetMapping
+//    ApiResponse<List<GetResponse>> getBookLists(){
+//        List<BookListDto> lists = service.findAllLists();
+//        List<GetResponse> responses = GetResponse.from(lists);
+//
+//        return ApiResponse.success(responses);
+//    }
+//    record GetResponse(
+//        Long bookListId,
+//        Long memberId,
+//        String title,
+//        String content,
+//        String hashTag,
+//        String backImg,
+//        List<BookDto> books
+//    ) {
+//        private static List<GetResponse> from(List<BookListDto> listDtos) {
+//            return listDtos.stream()
+//                .map(listDto -> {
+//                    List<BookDto> bookDtos = listDto.books().stream()
+//                        .map(book -> new BookDto(
+//                            book.id(),
+//                            book.title(),
+//                            book.content(),
+//                            book.link(),
+//                            book.image()
+//                        ))
+//                        .collect(Collectors.toList());
+//
+//                    return new GetResponse(
+//                        listDto.bookListId(),
+//                        listDto.memberId(),
+//                        listDto.title(),
+//                        listDto.content(),
+//                        listDto.hashTag(),
+//                        listDto.backImg(),
+//                        bookDtos
+//                    );
+//                })
+//                .collect(Collectors.toList());
+//        }
+//    }
 }
