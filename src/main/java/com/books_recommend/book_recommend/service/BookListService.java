@@ -6,6 +6,7 @@ import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.entity.BookList;
+import com.books_recommend.book_recommend.entity.Member;
 import com.books_recommend.book_recommend.repository.BookListRepository;
 import com.books_recommend.book_recommend.repository.BookRepository;
 import com.books_recommend.book_recommend.repository.MemberRepository;
@@ -35,18 +36,30 @@ public class BookListService {
         bookList.addMember(member);
 
         var savedBookList = bookListRepository.save(bookList);
+        addMapping(books, bookList, member);
         bookRepository.saveAll(books); //자동적으로 books 저장이 안됨
 
         return savedBookList.getId();
     }
+
+    private void addMapping(List<Book> books, BookList bookList, Member member) {
+        books.forEach(book -> {
+            book.addBookList(bookList);
+            book.addMember(member);
+        });
+    }
+
     private static List<Book> createBooks(CreateRequirement requirement, BookList bookList){
         return requirement.booksRequest.stream()
             .map(bookRequirement -> new Book(
                 bookList,
-                bookRequirement.bookName,
-                bookRequirement.content,
-                bookRequirement.link,
-                bookRequirement.image
+                bookRequirement.title,
+                bookRequirement.authors,
+                bookRequirement.isbn,
+                bookRequirement.publisher,
+                bookRequirement.image,
+                bookRequirement.url,
+                bookRequirement.recommendation
             ))
             .toList();
     }
@@ -68,10 +81,13 @@ public class BookListService {
         List<BookRequirement> booksRequest
     ){
         public record BookRequirement(
-            String bookName,
-            String content,
-            String link,
-            String image
+            String title,
+            String authors,
+            String isbn,
+            String publisher,
+            String image,
+            String url,
+            String recommendation
         ){}
     }
 
@@ -104,9 +120,12 @@ public class BookListService {
         return new BookDto(
             book.getId(),
             book.getTitle(),
-            book.getContent(),
-            book.getLink(),
-            book.getImage()
+            book.getAuthors(),
+            book.getIsbn(),
+            book.getPublisher(),
+            book.getImage(),
+            book.getUrl(),
+            book.getRecommendation()
         );
     }
 }

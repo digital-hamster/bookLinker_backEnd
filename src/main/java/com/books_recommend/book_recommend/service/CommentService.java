@@ -33,7 +33,7 @@ public class CommentService {
         var comment = createComment(requirement);
 
         comment.addMember(member);
-        comment.addBookList(bookList);
+//        comment.addBookList(bookList);
 
         var savedComment = commentRepository.save(comment);
         return savedComment.getId();

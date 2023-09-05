@@ -7,7 +7,7 @@ import java.util.List;
 public record KakaoBookDto (
     String title,
 
-    String authors,
+    List<String> authors,
 
     String isbn,
 

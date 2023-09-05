@@ -35,10 +35,13 @@ class BookListController {
         private BookListService.CreateRequirement toCreateRequirement() {
             var booksRequirements = books.stream()
                 .map(books -> new BookListService.CreateRequirement.BookRequirement(
-                    books.bookName,
-                    books.content,
-                    books.link,
-                    books.image
+                    books.title,
+                    books.authors,
+                    books.isbn,
+                    books.publisher,
+                    books.image,
+                    books.url,
+                    books.recommendation
                 ))
                 .collect(Collectors.toList());
 
@@ -52,10 +55,13 @@ class BookListController {
         }
 
         record BookRequest(
-            String bookName,
-            String content,
-            String link,
-            String image
+            String title,
+            String authors,
+            String isbn,
+            String publisher,
+            String image,
+            String url,
+            String recommendation
         ) {
         }
     }
@@ -64,8 +70,6 @@ class BookListController {
         Long bookListId
     ) {
     }
-
-
 
     @GetMapping
     ApiResponse<List<GetResponse>> getBookLists(){
@@ -90,9 +94,12 @@ class BookListController {
                         .map(book -> new BookDto(
                             book.id(),
                             book.title(),
-                            book.content(),
-                            book.link(),
-                            book.image()
+                            book.authors(),
+                            book.isbn(),
+                            book.publisher(),
+                            book.image(),
+                            book.url(),
+                            book.recommendation()
                         ))
                         .collect(Collectors.toList());
 
