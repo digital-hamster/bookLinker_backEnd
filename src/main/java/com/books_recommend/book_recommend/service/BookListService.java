@@ -189,8 +189,6 @@ public class BookListService {
         String backImg
     ){}
 
-    //--------------------------
-
     @Transactional
     public Long remove(Long bookListId, Long memberId){
         var member = memberRepository.findById(memberId)
