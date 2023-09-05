@@ -5,6 +5,10 @@ import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.service.BookListService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -72,9 +76,15 @@ class BookListController {
     }
 
     @GetMapping
-    ApiResponse<List<GetResponse>> getBookLists(){
-        List<BookListDto> lists = service.findAllLists();
-        List<GetResponse> responses = GetResponse.from(lists);
+    ApiResponse<Page<GetResponse>> getBookLists(Pageable pageable){
+        //(default 1) 클라이언트에게 받아온 pageable에서 꺼내야 함
+        var editPageable = PageRequest.of(
+            pageable.getPageNumber() - 1,
+            pageable.getPageSize(),
+            pageable.getSort());
+
+        var lists = service.findAllLists(editPageable);
+        Page<GetResponse> responses = GetResponse.from(lists);
 
         return ApiResponse.success(responses);
     }
@@ -87,8 +97,8 @@ class BookListController {
         String backImg,
         List<BookDto> books
     ) {
-        private static List<GetResponse> from(List<BookListDto> listDtos) {
-            return listDtos.stream()
+        private static Page<GetResponse> from(Page<BookListDto> listDtos) {
+            List<GetResponse> getResponses = listDtos.getContent().stream()
                 .map(listDto -> {
                     List<BookDto> bookDtos = listDto.books().stream()
                         .map(book -> new BookDto(
@@ -114,6 +124,8 @@ class BookListController {
                     );
                 })
                 .collect(Collectors.toList());
+
+            return new PageImpl<>(getResponses, listDtos.getPageable(), listDtos.getTotalElements());
         }
     }
 

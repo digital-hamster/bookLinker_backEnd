@@ -11,6 +11,9 @@ import com.books_recommend.book_recommend.repository.BookListRepository;
 import com.books_recommend.book_recommend.repository.BookRepository;
 import com.books_recommend.book_recommend.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,17 +100,23 @@ public class BookListService {
     }
 
     @Transactional(readOnly = true)
-    public List<BookListDto> findAllLists() {
-        List<BookList> lists = bookListRepository.findAll();
+    public Page<BookListDto> findAllLists(Pageable pageable) {
+        var lists = bookListRepository.findActiveBookList(pageable);
 
-        return lists.stream()
-            .map(BookListService::toListDto)
-            .collect(Collectors.toList());
+        var dtos = lists.stream()
+            .map(list -> toListDto(list))
+            .toList();
+
+        return new PageImpl<>(
+            dtos,
+            lists.getPageable(),
+            lists.getTotalElements()
+        );
     }
 
-    private static BookListDto toListDto(BookList list) {
-        List<BookDto> bookDtos = list.getBooks().stream()
-            .map(BookListService::toBookDto)
+    private BookListDto toListDto(BookList list) {
+        var bookDtos = list.getBooks().stream()
+            .map(this::toBookDto)
             .collect(Collectors.toList());
 
         return new BookListDto(
@@ -121,7 +130,7 @@ public class BookListService {
         );
     }
 
-    private static BookDto toBookDto(Book book) {
+    private BookDto toBookDto(Book book) {
         return new BookDto(
             book.getId(),
             book.getTitle(),
