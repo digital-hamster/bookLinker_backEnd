@@ -17,7 +17,7 @@ class KakaoApiController {
 
     private final KakaoApiService kakaoApiService;
 
-    @GetMapping("/kakao")
+    @GetMapping("/books")
     public ApiResponse<List<Response>> callApi(@RequestParam String query) {
         List<KakaoBookDto> savedBooks = kakaoApiService.searchBooks(query);
         List<Response> responseList = savedBooks.stream()
