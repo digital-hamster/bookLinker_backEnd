@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -128,6 +129,34 @@ class BookListController {
             return new PageImpl<>(getResponses, listDtos.getPageable(), listDtos.getTotalElements());
         }
     }
+
+    @GetMapping("/{bookListId}")//TODO 추후 토큰이 나올 경우, 토큰을 통해 isWriter 적용 예정
+    ApiResponse<GetOneResponse> getList(@PathVariable Long bookListId){
+
+        var listDto = service.getBookList(bookListId);
+        GetOneResponse response = new GetOneResponse(
+            listDto.bookListId(),
+//            listDto.isWriter(),
+            listDto.memberId(),
+            listDto.title(),
+            listDto.content(),
+            listDto.hashTag(),
+            listDto.backImg(),
+            listDto.books());
+
+        return ApiResponse.success(response);
+    }
+
+    record GetOneResponse(
+        Long bookListId,
+//        Boolean isWriter,
+        Long writerId,
+        String title,
+        String content,
+        String hashTag,
+        String backImg,
+        List<BookDto> books
+    ){}
 
     @DeleteMapping("/{bookListId}/{memberId}")
     ApiResponse<DeleteResponse> remove(@PathVariable Long bookListId, @PathVariable Long memberId){
