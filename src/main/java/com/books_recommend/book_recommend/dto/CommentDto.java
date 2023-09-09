@@ -5,8 +5,9 @@ import java.time.LocalDateTime;
 public record CommentDto(
     Long commentId,
     Long memberId,
+    Long bookListId,
     String content,
-    LocalDateTime createdAt,
-    Boolean isWriter //작성자 여부를 확인하기 위해서 !!!!!!
+    LocalDateTime createdAt
+//    Boolean isWriter //작성자 여부를 확인하기 위해서 !!!!!!
 ) {
 }

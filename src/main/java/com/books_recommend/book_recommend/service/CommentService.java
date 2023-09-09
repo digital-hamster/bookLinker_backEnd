@@ -47,21 +47,30 @@ public class CommentService {
         String content
     ){}
 
+    @Transactional(readOnly = true)
+    public List<CommentDto> getComments(Long bookListId){
+//        findMember(memberId);
+        findBookList(bookListId);
+
+        List<Comment> comments = commentRepository.findByBookListId(bookListId);
+        var dtos = comments.stream()
+            .map(comment -> new CommentDto(
+                comment.getId(),
+                comment.getMember().getId(),
+                comment.getBookList().getId(),
+                comment.getContent(),
+                comment.getCreatedAt()
+                //작성자 여부는 토큰이 만들어진 이후에
+            ))
+            .toList();
+
+        return dtos;
+    }
 
 
 
 
-//    @Transactional(readOnly = true)
-//    public List<CommentDto> getComments(Long bookListId, Long memberId){
-//        var member = findMember(memberId);
-//        var bookList = findBookList(bookListId);
-//
-//        List<Comment> comments = commentRepository.findByBookListIdAll(bookListId);
-//    }
-
-
-
-
+    //TODO 추후 다른 서비스에도 넣을 내부 메소드@@@@
     private BookList findBookList(Long bookListId){
         return bookListRepository.findById(bookListId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));

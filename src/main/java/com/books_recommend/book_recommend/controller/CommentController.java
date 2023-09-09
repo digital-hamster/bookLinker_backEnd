@@ -7,9 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/comment")
+@RequestMapping("/comments")
 @RequiredArgsConstructor
 class CommentController {
 
@@ -40,16 +42,29 @@ class CommentController {
         ){}
     }
 
-//    @GetMapping("{bookListId}/{memberId}")
-//    ApiResponse getComments(@PathVariable Long bookListId,
-//                            @PathVariable Long memberId){
-//
-//    }
-//
-//    record GetResponse(
-//        Long commentId,
-//        Long content,
-//        LocalDateTime createAt,
+    @GetMapping("{bookListId}")
+    ApiResponse<List<GetResponse>> getComments(@PathVariable Long bookListId){
+
+        var dtos = service.getComments(bookListId);
+        var response = dtos.stream()
+                .map(dto -> new GetResponse(
+                    dto.commentId(),
+                    dto.memberId(),
+                    dto.bookListId(),
+                    dto.content(),
+                    dto.createdAt()
+                ))
+            .toList();
+
+        return ApiResponse.success(response);
+    }
+
+    record GetResponse(
+        Long commentId,
+        Long memberId,
+        Long bookListId,
+        String content,
+        LocalDateTime createAt
 //        Boolean isWriter
-//    ){}
+    ){}
 }
