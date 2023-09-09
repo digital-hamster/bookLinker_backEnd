@@ -1,0 +1,27 @@
+package com.books_recommend.book_recommend.controller;
+
+import com.books_recommend.book_recommend.common.web.ApiResponse;
+import com.books_recommend.book_recommend.service.BookListService;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.Optional;
+
+public class SearchBookListController {
+    @GetMapping("/search")
+    ApiResponse<Page<BookListController.GetResponse>> getSearchLists(BookListController.SearchRequest request,
+                                                                     @NotNull Pageable pageable){
+        var requirement = new BookListService.SearchRequirement(request.title);
+
+        var lists = service.findSearchLists(requirement, pageable);
+        var responses = BookListController.GetResponse.from(lists);
+
+        return ApiResponse.success(responses);
+    }
+
+    record SearchRequest(
+        Optional<String> title
+    ){}
+}

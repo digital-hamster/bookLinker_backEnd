@@ -4,6 +4,8 @@ import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.service.BookListService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -67,8 +69,7 @@ class BookListController {
             String image,
             String url,
             String recommendation
-        ) {
-        }
+        ) {}
     }
 
     record CreateResponse(
@@ -76,16 +77,30 @@ class BookListController {
     ) {
     }
 
+    @GetMapping("/search")
+    ApiResponse<Page<BookListController.GetResponse>> getSearchLists(BookListController.SearchRequest request,
+                                                                     @NotNull Pageable pageable){
+        var requirement = new BookListService.SearchRequirement(request.title);
+        var editPageable = setDefault(pageable);
+
+        var lists = service.findSearchLists(requirement, editPageable);
+        var responses = BookListController.GetResponse.from(lists);
+
+        return ApiResponse.success(responses);
+    }
+
+    record SearchRequest(
+        Optional<String> title,
+        @NotNull
+        Pageable pageable
+    ){}
+
     @GetMapping
     ApiResponse<Page<GetResponse>> getBookLists(Pageable pageable){
-        //(default 1) 클라이언트에게 받아온 pageable에서 꺼내야 함
-        var editPageable = PageRequest.of(
-            pageable.getPageNumber() - 1,
-            pageable.getPageSize(),
-            pageable.getSort());
+        var editPageable = setDefault(pageable);
 
         var lists = service.findAllLists(editPageable);
-        Page<GetResponse> responses = GetResponse.from(lists);
+        var responses = GetResponse.from(lists);
 
         return ApiResponse.success(responses);
     }
@@ -128,6 +143,13 @@ class BookListController {
 
             return new PageImpl<>(getResponses, listDtos.getPageable(), listDtos.getTotalElements());
         }
+    }
+
+    private static Pageable setDefault(Pageable pageable){ //(default 1) 클라이언트에게 받아온 pageable에서 꺼내야 함
+        return PageRequest.of(
+            pageable.getPageNumber() - 1,
+            pageable.getPageSize(),
+            pageable.getSort());
     }
 
     @GetMapping("/{bookListId}")//TODO 추후 토큰이 나올 경우, 토큰을 통해 isWriter 적용 예정
@@ -222,8 +244,6 @@ class BookListController {
 
 
     }
-
-
 
     record UpdateResponse(
         Long bookListId
