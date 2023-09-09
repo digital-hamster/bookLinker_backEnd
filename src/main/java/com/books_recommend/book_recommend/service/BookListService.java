@@ -8,6 +8,7 @@ import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.entity.BookList;
 import com.books_recommend.book_recommend.entity.Member;
 import com.books_recommend.book_recommend.repository.BookListRepository;
+import com.books_recommend.book_recommend.repository.BookListRepositoryCustom;
 import com.books_recommend.book_recommend.repository.BookRepository;
 import com.books_recommend.book_recommend.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -102,6 +104,25 @@ public class BookListService {
         ) {
         }
     }
+
+    @Transactional(readOnly = true)
+    public Page<BookListDto> findSearchLists(BookListService.SearchRequirement requirement, Pageable pageable) {
+        var searchCondition = new BookListRepositoryCustom.SearchCondition(requirement.title);
+        var lists = bookListRepository.searchTitle(searchCondition, pageable);
+
+        var dtos = lists.stream()
+            .map(list -> toListDto(list))
+            .toList();
+
+        return new PageImpl<>(
+            dtos,
+            lists.getPageable(),
+            lists.getTotalElements()
+        );
+    }
+    public record SearchRequirement(
+        Optional<String> title
+    ){}
 
     @Transactional(readOnly = true)
     public Page<BookListDto> findAllLists(Pageable pageable) {
