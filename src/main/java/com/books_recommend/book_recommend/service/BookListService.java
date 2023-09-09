@@ -239,6 +239,10 @@ public class BookListService {
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
 
         var list = bookListRepository.findActiveBookList(bookListId);
+            if(list == null){
+                throw new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND);
+            }
+
         var updateContent = fromRequirement(requirement);
 
         var books = bookRepository.findByBookListId(bookListId);
