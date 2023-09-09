@@ -12,33 +12,33 @@ import java.time.LocalDateTime;
 @RequestMapping("/comment")
 @RequiredArgsConstructor
 class CommentController {
-//
-//    private final CommentService service;
-//
-//    @PostMapping("{bookListId}/{memberId}")
-//    ApiResponse<CreateRequest.CreateResponse> createComment(@RequestBody CreateRequest request,
-//                                          @PathVariable Long bookListId,
-//                                          @PathVariable Long memberId
-//                                          ){
-//        var savedComment = service.create(request.toCreateRequirement(), memberId, bookListId);
-//
-//        var response = new CreateRequest.CreateResponse(savedComment);
-//        return ApiResponse.success(response);
-//    }
-//
-//    record CreateRequest(
-//        @NotNull(message = "댓글 입력을 해주세요.")
-//        String content
-//    ){
-//        private CommentService.CreateRequirement toCreateRequirement() {
-//            return new CommentService.CreateRequirement(
-//                content
-//            );
-//        }
-//        record CreateResponse(
-//            Long id
-//        ){}
-//    }
+
+    private final CommentService service;
+
+    @PostMapping("{bookListId}/{memberId}")
+    ApiResponse<CreateRequest.CreateResponse> createComment(@RequestBody CreateRequest request,
+                                          @PathVariable Long bookListId,
+                                          @PathVariable Long memberId
+                                          ){
+        var savedComment = service.create(request.toCreateRequirement(), memberId, bookListId);
+
+        var response = new CreateRequest.CreateResponse(savedComment);
+        return ApiResponse.success(response);
+    }
+
+    record CreateRequest(
+        @NotNull(message = "댓글 입력을 해주세요.")
+        String content
+    ){
+        private CommentService.CreateRequirement toCreateRequirement() {
+            return new CommentService.CreateRequirement(
+                content
+            );
+        }
+        record CreateResponse(
+            Long id
+        ){}
+    }
 
 //    @GetMapping("{bookListId}/{memberId}")
 //    ApiResponse getComments(@PathVariable Long bookListId,
@@ -52,8 +52,4 @@ class CommentController {
 //        LocalDateTime createAt,
 //        Boolean isWriter
 //    ){}
-
-
-
-
 }
