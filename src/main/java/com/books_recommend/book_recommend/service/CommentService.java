@@ -71,11 +71,10 @@ public class CommentService {
     public Long update(String content, Long commentId, Long memberId){
         var member = findMember(memberId);
         var bookList = findBookListByCommentId(commentId);
-        checkWriter(bookList, member);
 
         var comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND));
-
+        checkWriter(comment, member);
 
 
         comment.update(content);
@@ -88,16 +87,17 @@ public class CommentService {
     public void delete(Long commentId, Long memberId){
         var member = findMember(memberId);
         var bookList = findBookListByCommentId(commentId);
-        checkWriter(bookList, member);
+
 
         var comment = commentRepository.findById(commentId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+        checkWriter(comment, member);
 
         commentRepository.delete(comment);
     }
 
-    private static void checkWriter(BookList bookList, Member member){
-        if(bookList.getMember().getId() != member.getId()){
+    private static void checkWriter(Comment comment, Member member){
+        if(comment.getMember().getId() != member.getId()){
             throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
         }
     }
