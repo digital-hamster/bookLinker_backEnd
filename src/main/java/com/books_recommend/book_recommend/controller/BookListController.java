@@ -159,7 +159,8 @@ class BookListController {
     ){}
 
     @DeleteMapping("/{bookListId}/{memberId}")
-    ApiResponse<DeleteResponse> remove(@PathVariable Long bookListId, @PathVariable Long memberId){
+    ApiResponse<DeleteResponse> remove(@PathVariable Long bookListId,
+                                       @PathVariable Long memberId){
         var removedId = service.remove(bookListId, memberId);
         var response = new DeleteResponse(removedId);
         return ApiResponse.success(response);
@@ -168,4 +169,64 @@ class BookListController {
     record DeleteResponse(
         Long bookListId
     ){}
+
+    @PutMapping("/{bookListId}/{memberId}")
+    ApiResponse<UpdateResponse> update(@RequestBody UpdateRequest request,
+                                       @PathVariable Long bookListId,
+                                       @PathVariable Long memberId){
+
+        var updatedId = service.update(request.toRequirement(), bookListId, memberId);
+        var response = new UpdateResponse(updatedId);
+
+        return ApiResponse.success(response);
+    }
+    record UpdateRequest(
+        String title,
+        String content,
+        String hashTag,
+        String backImg,
+        List<UpdateRequest.UpdateBookRequest> books
+    ){
+        private BookListService.UpdateRequirement toRequirement() {
+            var booksRequirements = books.stream()
+                .map(books -> new BookListService.UpdateRequirement.BookRequirement(
+                    books.title,
+                    books.authors,
+                    books.isbn,
+                    books.publisher,
+                    books.image,
+                    books.url,
+                    books.recommendation
+                ))
+                .collect(Collectors.toList());
+
+            return new BookListService.UpdateRequirement(
+                title,
+                content,
+                hashTag,
+                backImg,
+                booksRequirements
+            );
+        }
+
+        record UpdateBookRequest(
+            String title,
+            String authors,
+            String isbn,
+            String publisher,
+            String image,
+            String url,
+            String recommendation
+        ) { }
+
+
+
+    }
+
+
+
+    record UpdateResponse(
+        Long bookListId
+    ){}
+
 }
