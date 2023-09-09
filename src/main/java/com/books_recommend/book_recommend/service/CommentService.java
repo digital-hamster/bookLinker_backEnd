@@ -47,28 +47,79 @@ public class CommentService {
         String content
     ){}
 
+    @Transactional(readOnly = true)
+    public List<CommentDto> getComments(Long bookListId){
+//        findMember(memberId);
+        findBookList(bookListId);
+
+        List<Comment> comments = commentRepository.findAllByBookListId(bookListId);
+        var dtos = comments.stream()
+            .map(comment -> new CommentDto(
+                comment.getId(),
+                comment.getMember().getId(),
+                comment.getBookList().getId(),
+                comment.getContent(),
+                comment.getCreatedAt()
+                //작성자 여부는 토큰이 만들어진 이후에
+            ))
+            .toList();
+
+        return dtos;
+    }
+
+    @Transactional
+    public Long update(String content, Long commentId, Long memberId){
+        var member = findMember(memberId);
+        var bookList = findBookListByCommentId(commentId);
+        checkWriter(bookList, member);
+
+        var comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND));
 
 
 
+        comment.update(content);
 
-//    @Transactional(readOnly = true)
-//    public List<CommentDto> getComments(Long bookListId, Long memberId){
-//        var member = findMember(memberId);
-//        var bookList = findBookList(bookListId);
-//
-//        List<Comment> comments = commentRepository.findByBookListIdAll(bookListId);
-//    }
+        var savedComment = commentRepository.save(comment);
+        return savedComment.getId();
+    }
 
+    @Transactional
+    public void delete(Long commentId, Long memberId){
+        var member = findMember(memberId);
+        var bookList = findBookListByCommentId(commentId);
+        checkWriter(bookList, member);
 
-
-
-    private BookList findBookList(Long bookListId){
-        return bookListRepository.findById(bookListId)
+        var comment = commentRepository.findById(commentId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+
+        commentRepository.delete(comment);
+    }
+
+    private static void checkWriter(BookList bookList, Member member){
+        if(bookList.getMember().getId() != member.getId()){
+            throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
+        }
+    }
+
+
+    //TODO 추후 다른 서비스에도 넣을 내부 메소드@@@@
+    private BookList findBookList(Long bookListId) {
+        return bookListRepository.findById(bookListId)
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
     }
 
     private Member findMember(Long memberId){
         return memberRepository.findById(memberId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
     }
+
+    private BookList findBookListByCommentId(Long commentId){
+        var bookList = bookListRepository.findBookListByCommentId(commentId);
+            if (bookList == null){
+                throw new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND);
+            }
+        return bookList;
+    }
+
 }

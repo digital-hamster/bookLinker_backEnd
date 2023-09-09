@@ -20,6 +20,8 @@ BookListRepositoryCustom{
     @Query("select b from BookList b where b.deletedAt is null ORDER BY b.id DESC")
     BookList findActiveBookList(Long bookListId);
 
-//    @Query("select b from BookList b where b.deletedAt is null ORDER BY b.id DESC")
     Page<BookList> searchTitle(SearchCondition searchCondition, Pageable pageable);
+
+    @Query("SELECT b FROM BookList b JOIN b.comments c WHERE c.id = :commentId")
+    BookList findBookListByCommentId(Long commentId);
 }
