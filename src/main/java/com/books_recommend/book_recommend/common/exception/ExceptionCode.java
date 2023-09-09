@@ -14,6 +14,9 @@ import lombok.Getter;
         MEMBER_NOT_FOUND("존재하지 않는 사용자 입니다"),
         MEMBER_NOT_WRITER("작성자 본인이 아닙니다."),
 
+        //Comment
+        COMMENT_NOT_FOUND("존재하지 않는 댓글 입니다."),
+
         BOOK_NOT_FOUND("존재하지 않는 책입니다.");
 
 

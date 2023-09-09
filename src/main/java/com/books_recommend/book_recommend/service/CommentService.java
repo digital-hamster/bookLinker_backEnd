@@ -52,7 +52,7 @@ public class CommentService {
 //        findMember(memberId);
         findBookList(bookListId);
 
-        List<Comment> comments = commentRepository.findByBookListId(bookListId);
+        List<Comment> comments = commentRepository.findAllByBookListId(bookListId);
         var dtos = comments.stream()
             .map(comment -> new CommentDto(
                 comment.getId(),
@@ -67,6 +67,34 @@ public class CommentService {
         return dtos;
     }
 
+    @Transactional
+    public Long update(String content, Long commentId, Long memberId){
+        var member = findMember(memberId);
+        var bookList = findBookList(commentRepository, bookListRepository, commentId);
+        checkWriter(bookList, member);
+
+        var comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND));
+        comment.update(content);
+
+        var savedComment = commentRepository.save(comment);
+        return savedComment.getId();
+    }
+
+    private static BookList findBookList(CommentRepository commentRepository,
+                                         BookListRepository bookListRepository,
+                                         Long commentId){
+        var bookListid = commentRepository.findBookListIds(commentId);
+        var bookList = bookListRepository.findById(bookListid)
+            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+        return bookList;
+    }
+
+    private static void checkWriter(BookList bookList, Member member){
+        if(bookList.getMember().getId() != member.getId()){
+            throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
+        }
+    }
 
 
 
@@ -80,4 +108,5 @@ public class CommentService {
         return memberRepository.findById(memberId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
     }
+
 }

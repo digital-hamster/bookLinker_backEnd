@@ -67,4 +67,18 @@ class CommentController {
         LocalDateTime createAt
 //        Boolean isWriter
     ){}
+
+    @PutMapping("{bookListid}/{memberId}")
+    ApiResponse<Long> update(@RequestBody UpdateRequest request,
+                             @PathVariable Long bookListid,
+                             @PathVariable Long memberId){
+        var content = request.content;
+        var commentId = service.update(content, bookListid, memberId);
+
+        return ApiResponse.success(commentId);
+    }
+
+    record UpdateRequest(
+        String content
+    ){}
 }

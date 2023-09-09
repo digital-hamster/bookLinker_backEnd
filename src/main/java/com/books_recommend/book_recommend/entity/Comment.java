@@ -50,4 +50,8 @@ public class Comment extends BaseTimeEntity {
             member.getComments().add(this);
         }
     }
+
+    public void update(String content){
+        this.content = content;
+    }
 }
