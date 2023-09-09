@@ -9,7 +9,4 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.bookList.id = :bookListId ORDER BY c.createdAt DESC")
     List<Comment> findAllByBookListId(Long bookListId);
-
-    @Query("SELECT c.bookList.id FROM Comment c WHERE c.id = :commentId")
-    Long findBookListIds(Long commentId);
 }

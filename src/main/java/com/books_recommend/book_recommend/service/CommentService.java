@@ -70,11 +70,14 @@ public class CommentService {
     @Transactional
     public Long update(String content, Long commentId, Long memberId){
         var member = findMember(memberId);
-        var bookList = findBookList(commentRepository, bookListRepository, commentId);
+        var bookList = findBookListByCommentId(commentId);
         checkWriter(bookList, member);
 
         var comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND));
+
+
+
         comment.update(content);
 
         var savedComment = commentRepository.save(comment);
@@ -84,22 +87,13 @@ public class CommentService {
     @Transactional
     public void delete(Long commentId, Long memberId){
         var member = findMember(memberId);
-        var bookList = findBookList(commentRepository, bookListRepository, commentId);
+        var bookList = findBookListByCommentId(commentId);
         checkWriter(bookList, member);
 
         var comment = commentRepository.findById(commentId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
 
         commentRepository.delete(comment);
-    }
-
-    private static BookList findBookList(CommentRepository commentRepository,
-                                         BookListRepository bookListRepository,
-                                         Long commentId){
-        var bookListid = commentRepository.findBookListIds(commentId);
-        var bookList = bookListRepository.findById(bookListid)
-            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
-        return bookList;
     }
 
     private static void checkWriter(BookList bookList, Member member){
@@ -110,14 +104,22 @@ public class CommentService {
 
 
     //TODO 추후 다른 서비스에도 넣을 내부 메소드@@@@
-    private BookList findBookList(Long bookListId){
+    private BookList findBookList(Long bookListId) {
         return bookListRepository.findById(bookListId)
-            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
     }
 
     private Member findMember(Long memberId){
         return memberRepository.findById(memberId)
             .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
+
+    private BookList findBookListByCommentId(Long commentId){
+        var bookList = bookListRepository.findBookListByCommentId(commentId);
+            if (bookList == null){
+                throw new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND);
+            }
+        return bookList;
     }
 
 }
