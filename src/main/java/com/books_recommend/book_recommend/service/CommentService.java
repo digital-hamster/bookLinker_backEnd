@@ -81,6 +81,18 @@ public class CommentService {
         return savedComment.getId();
     }
 
+    @Transactional
+    public void delete(Long commentId, Long memberId){
+        var member = findMember(memberId);
+        var bookList = findBookList(commentRepository, bookListRepository, commentId);
+        checkWriter(bookList, member);
+
+        var comment = commentRepository.findById(commentId)
+            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+
+        commentRepository.delete(comment);
+    }
+
     private static BookList findBookList(CommentRepository commentRepository,
                                          BookListRepository bookListRepository,
                                          Long commentId){
@@ -95,7 +107,6 @@ public class CommentService {
             throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
         }
     }
-
 
 
     //TODO 추후 다른 서비스에도 넣을 내부 메소드@@@@

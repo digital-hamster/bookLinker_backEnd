@@ -73,12 +73,20 @@ class CommentController {
                              @PathVariable Long bookListid,
                              @PathVariable Long memberId){
         var content = request.content;
-        var commentId = service.update(content, bookListid, memberId);
+        var updatedId = service.update(content, bookListid, memberId);
 
-        return ApiResponse.success(commentId);
+        return ApiResponse.success(updatedId);
     }
 
     record UpdateRequest(
         String content
     ){}
+
+    @DeleteMapping("{commentId}/{memberId}")
+    ApiResponse delete(@PathVariable Long commentId,
+                             @PathVariable Long memberId){
+        service.delete(commentId, memberId);
+
+        return ApiResponse.success();
+    }
 }
