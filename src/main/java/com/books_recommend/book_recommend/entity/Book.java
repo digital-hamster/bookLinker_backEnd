@@ -1,6 +1,7 @@
 package com.books_recommend.book_recommend.entity;
 
 import com.books_recommend.book_recommend.common.entity.BaseTimeEntity;
+import com.books_recommend.book_recommend.service.BookListService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -86,5 +87,15 @@ public class Book extends BaseTimeEntity {
         if (!bookList.getBooks().contains(this)) {
             bookList.getBooks().add(this);
         }
+    }
+
+    public void update(Book book){
+        this.title = book.title;
+        this.authors = book.authors;
+        this.isbn = book.isbn;
+        this.publisher = book.publisher;
+        this.image = book.image;
+        this.url = book.url;
+        this.recommendation = book.recommendation;
     }
 }

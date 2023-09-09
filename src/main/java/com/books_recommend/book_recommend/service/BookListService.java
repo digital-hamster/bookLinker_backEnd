@@ -19,11 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-//1. 전체 페이지 네이션 적용하기 (get)
-//2. getBooklist(bookListId) 조회하기
 //3. 특정 BookList 검색하기 (title)
 
 @Service
@@ -34,9 +32,10 @@ public class BookListService {
     private final BookRepository bookRepository;
 
     @Transactional
-    public Long create(CreateRequirement requirement, Long memberId){
+    public Long create(CreateRequirement requirement,
+                       Long memberId) {
         var member = memberRepository.findById(memberId)
-            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
 
         var bookList = createBookList(requirement);
         var books = createBooks(requirement, bookList);
@@ -51,14 +50,17 @@ public class BookListService {
         return savedBookList.getId();
     }
 
-    private void addMapping(List<Book> books, BookList bookList, Member member) {
+    private void addMapping(List<Book> books,
+                            BookList bookList,
+                            Member member) {
         books.forEach(book -> {
             book.addBookList(bookList);
             book.addMember(member);
         });
     }
 
-    private static List<Book> createBooks(CreateRequirement requirement, BookList bookList){
+    private static List<Book> createBooks(CreateRequirement requirement,
+                                          BookList bookList) {
         return requirement.booksRequest.stream()
             .map(bookRequirement -> new Book(
                 bookList,
@@ -73,7 +75,7 @@ public class BookListService {
             .toList();
     }
 
-    private static BookList createBookList(CreateRequirement requirement){
+    private static BookList createBookList(CreateRequirement requirement) {
         return new BookList(
             requirement.title,
             requirement.content,
@@ -88,7 +90,7 @@ public class BookListService {
         String hashTag,
         String backImg,
         List<BookRequirement> booksRequest
-    ){
+    ) {
         public record BookRequirement(
             String title,
             String authors,
@@ -97,7 +99,8 @@ public class BookListService {
             String image,
             String url,
             String recommendation
-        ){}
+        ) {
+        }
     }
 
     @Transactional(readOnly = true)
@@ -168,11 +171,13 @@ public class BookListService {
             list.getHashTag(),
             list.getBackImg());
     }
-    private static Boolean isWriter(BookList list, Member member){
+
+    private static Boolean isWriter(BookList list,
+                                    Member member) {
         return member != null && Objects.equals(member.getId(), list.getMember().getId());
     }
 
-    private List<BookDto> fromEntity(BookList list){
+    private List<BookDto> fromEntity(BookList list) {
         return list.getBooks().stream()
             .map(BookDto::fromEntity)
             .collect(Collectors.toList());
@@ -187,20 +192,94 @@ public class BookListService {
         String content,
         String hashTag,
         String backImg
-    ){}
+    ) {}
 
     @Transactional
-    public Long remove(Long bookListId, Long memberId){
+    public Long remove(Long bookListId,
+                       Long memberId) {
         var member = memberRepository.findById(memberId)
-            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
 
         var bookList = bookListRepository.findById(bookListId)
-            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
 
-        if(!Objects.equals(member.getId(), memberId)){
+        if (!Objects.equals(member.getId(), memberId)) {
             throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_DELETE_LIST);
         }
         bookList.remove();
         return bookList.getId();
+    }
+
+    @Transactional
+    public Long update(UpdateRequirement requirement,
+                       Long bookListId,
+                       Long memberId) {
+        var member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+
+        var list = bookListRepository.findActiveBookList(bookListId);
+        var updateContent = fromRequirement(requirement);
+
+        var books = bookRepository.findByBookListId(bookListId);
+        var updateBooksContent = fromRequirement(requirement, list);
+
+
+        if(!Objects.equals(member.getId(), list.getMember().getId())){
+            throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
+        }
+
+        list.update(updateContent);
+        //books update
+        IntStream.range(0, books.size())
+            .forEach(i -> books.get(i).update(updateBooksContent.get(i)));
+
+        bookListRepository.save(list);
+        bookRepository.saveAll(books);
+
+        return list.getId();
+    }
+
+    private static BookList fromRequirement(UpdateRequirement requirement) {
+        return new BookList(
+            requirement.title,
+            requirement.content,
+            requirement.hashTag,
+            requirement.backImg
+        );
+    }
+
+    private static List<Book> fromRequirement(UpdateRequirement requirement,
+                                          BookList bookList) {
+        return requirement.books().stream()
+            .map(bookRequirement -> new Book(
+                bookList,
+                bookRequirement.title,
+                bookRequirement.authors,
+                bookRequirement.isbn,
+                bookRequirement.publisher,
+                bookRequirement.image,
+                bookRequirement.url,
+                bookRequirement.recommendation
+            ))
+            .toList();
+    }
+
+    public record UpdateRequirement(
+        String title,
+        String content,
+        String hashTag,
+        String backImg,
+        List<UpdateRequirement.BookRequirement> books
+    ) {
+
+        public record BookRequirement(
+            String title,
+            String authors,
+            String isbn,
+            String publisher,
+            String image,
+            String url,
+            String recommendation
+        ) {}
     }
 }

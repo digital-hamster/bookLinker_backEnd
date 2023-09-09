@@ -11,4 +11,7 @@ import java.util.List;
 public interface BookListRepository extends JpaRepository<BookList, Long> {
     @Query("select b from BookList b where b.deletedAt is null ORDER BY b.id DESC")
     Page<BookList> findActiveBookList(Pageable pageable);
+
+    @Query("select b from BookList b where b.deletedAt is null ORDER BY b.id DESC")
+    BookList findActiveBookList(Long bookListId);
 }

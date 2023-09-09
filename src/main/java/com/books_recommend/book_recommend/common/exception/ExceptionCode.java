@@ -9,7 +9,11 @@ import lombok.Getter;
         //List
         LIST_NOT_FOUND("존재하지 않는 리스트 입니다."),
         MEMBER_NOT_DELETE_LIST("리스트를 삭제할 수 없는 사용자 입니다."),
+
+        //Member
         MEMBER_NOT_FOUND("존재하지 않는 사용자 입니다"),
+        MEMBER_NOT_WRITER("작성자 본인이 아닙니다."),
+
         BOOK_NOT_FOUND("존재하지 않는 책입니다.");
 
 
