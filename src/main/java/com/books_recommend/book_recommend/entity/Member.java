@@ -76,4 +76,8 @@ public class Member extends BaseTimeEntity {
         this.books.add(book);
         book.getMember().getBooks().add(book);
     }
+
+    public void update(String nickName){
+        this.nickName = nickName;
+    }
 }
