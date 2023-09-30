@@ -31,7 +31,7 @@ public class Member extends BaseTimeEntity {
 
     @Enumerated(value = EnumType.STRING)
     @Column
-    private MemberStatus status;
+    private ROLES roles;
 
     @Column
     private LocalDateTime deletedAt;
@@ -52,8 +52,8 @@ public class Member extends BaseTimeEntity {
 
     @Getter
     @RequiredArgsConstructor
-    public enum MemberStatus {
-        USER("일반회원"),
+    public enum ROLES {
+        MEMBER("일반회원"),
         ADMIN("관리자");
 
         private final String status;
@@ -65,7 +65,7 @@ public class Member extends BaseTimeEntity {
         this.email = email;
         this.nickName = nickName;
         this.password = password;
-        this.status = MemberStatus.USER;
+        this.roles = ROLES.MEMBER;
     }
 
     public void remove(){
