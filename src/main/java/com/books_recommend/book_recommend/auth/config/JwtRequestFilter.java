@@ -44,7 +44,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             Arrays.asList(
                 "/members/authenticate",
                 "/members",
-                "/booklists/search"
+                "/booklists/search",
+                "/books"
             ));
 
 
