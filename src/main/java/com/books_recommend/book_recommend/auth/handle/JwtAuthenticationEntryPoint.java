@@ -11,14 +11,15 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
-    //사용자 인증 실패 에러 핸들러
-
+    // 사용자 인증 실패 에러 핸들러
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException e) throws IOException, ServletException {
 
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "UnAuthorized");
-        //ㄴ> 에러코드 401, 에러메시지
+        String errorMessage = e.getMessage(); // 예외 메시지 가져오기
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 상태코드 설정
+        response.getWriter().write(errorMessage); // 예외 메시지 전송
     }
 }

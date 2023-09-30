@@ -7,6 +7,7 @@ import lombok.Getter;
     @AllArgsConstructor
     public enum ExceptionCode {
         //auth
+        TOKEN_NOT_FOUND("토큰을 찾을 수 없습니다."),
         TOKEN_EXPIRED("만료된 토큰입니다."),
         TOKEN_NOT_UNABLE("토큰을 얻을 수 없습니다."),
         TOKEN_NOT_BEGIN_BEARER("토큰의 형식이 Bearer로 시작하지 않습니다."),
