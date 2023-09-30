@@ -1,8 +1,7 @@
 package com.books_recommend.book_recommend.auth.config;
 
+import com.books_recommend.book_recommend.common.exception.AuthExceptionCode;
 import com.books_recommend.book_recommend.auth.service.JwtUserDetailsService;
-import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
-import com.books_recommend.book_recommend.common.exception.ExceptionCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -56,6 +55,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         final String requestTokenHeader = request.getHeader("Authorization");
         //Authorization 헤더를 읽어옵
+        if(requestTokenHeader.isEmpty()){
+            AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_NOT_FOUND);
+            return;
+        }
 
         String username = null;
         String jwtToken = null;
@@ -66,12 +69,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtTokenizer.getUsernameFromToken(jwtToken);//토큰 파싱 > 유저 정보 추출 (username)
             } catch (IllegalArgumentException e) {
-                throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_UNABLE);
+                AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_NOT_UNABLE);
+                return;
             } catch (ExpiredJwtException e) {
-                throw new BusinessLogicException(ExceptionCode.TOKEN_EXPIRED);
+                AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_EXPIRED);
             }
         } else {
-            throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_BEGIN_BEARER);
+            AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_NOT_BEGIN_BEARER);
         }
 
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) { //현재 인증이 여부
