@@ -23,10 +23,9 @@ import java.util.stream.Collectors;
 class BookListController {
     private final BookListService service;
 
-    @PostMapping("/{memberId}")
-    ApiResponse<CreateResponse> createBookList(@RequestBody CreateRequest request,
-                                               @PathVariable Long memberId) {
-        var bookListId = service.create(request.toCreateRequirement(), memberId);
+    @PostMapping()
+    ApiResponse<CreateResponse> createBookList(@RequestBody CreateRequest request) {
+        var bookListId = service.create(request.toCreateRequirement());
 
         var response = new CreateResponse(bookListId);
         return ApiResponse.success(response);

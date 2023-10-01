@@ -32,13 +32,11 @@ public class BookListService {
     private final BookListRepository bookListRepository;
     private final MemberRepository memberRepository;
     private final BookRepository bookRepository;
+    private final MemberService memberService;
 
     @Transactional
-    public Long create(CreateRequirement requirement,
-                       Long memberId) {
-        var member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
-
+    public Long create(CreateRequirement requirement) {
+        var member = memberService.findMember();
         var bookList = createBookList(requirement);
         var books = createBooks(requirement, bookList);
 
