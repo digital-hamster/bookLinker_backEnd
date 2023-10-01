@@ -75,9 +75,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 return;
             } catch (ExpiredJwtException e) {
                 AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_EXPIRED);
+                return;
             }
         } else {
             AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_NOT_BEGIN_BEARER);
+            return;
         }
 
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) { //현재 인증이 여부
