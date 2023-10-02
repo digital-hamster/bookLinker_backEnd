@@ -1,6 +1,5 @@
 package com.books_recommend.book_recommend.auth.config;
 
-import com.books_recommend.book_recommend.common.exception.AuthExceptionCode;
 import com.books_recommend.book_recommend.auth.service.JwtUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -45,7 +44,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 "/members/authenticate",
                 "/members",
                 "/booklists/search",
-                "/books"
+                "/books",
+                "/booklists/*"
             ));
 
 
@@ -55,54 +55,45 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        final String requestTokenHeader = request.getHeader("Authorization");
-        //Authorization 헤더를 읽어옵
-        if(requestTokenHeader.isEmpty()){
-            AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_NOT_FOUND);
-            return;
-        }
+            final String requestTokenHeader = request.getHeader("Authorization");
 
-        String username = null;
-        String jwtToken = null;
+            String username = null;
+            String jwtToken = null;
 
-        //이미 인증된 사용자인지 확인
-        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
-            jwtToken = requestTokenHeader.substring(7);
-            try {
-                username = jwtTokenizer.getUsernameFromToken(jwtToken);//토큰 파싱 > 유저 정보 추출 (username)
-            } catch (IllegalArgumentException e) {
-                AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_NOT_UNABLE);
-                return;
-            } catch (ExpiredJwtException e) {
-                AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_EXPIRED);
-                return;
+            //이미 인증된 사용자인지 확인
+            if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+                jwtToken = requestTokenHeader.substring(7);
+                try {
+                    username = jwtTokenizer.getUsernameFromToken(jwtToken);//토큰 파싱 > 유저 정보 추출 (username)
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Unable to get JWT Token");
+                } catch (ExpiredJwtException e) {
+                    System.out.println("JWT Token has expired");
+                }
+            } else {
+                logger.warn("JWT Token does not begin with Bearer String");
             }
-        } else {
-            AuthExceptionCode.handleException(response, AuthExceptionCode.TOKEN_NOT_BEGIN_BEARER);
-            return;
-        }
 
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) { //현재 인증이 여부
-            var userDetails = this.jwtUserDetailService.loadUserByUsername(username);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) { //현재 인증이 여부
+                var userDetails = this.jwtUserDetailService.loadUserByUsername(username);
 
-            if(jwtTokenizer.validateToken(jwtToken, userDetails)) { //validate 메소드(util)에 있는 메소드로 토큰 검증
-                var authenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null ,userDetails.getAuthorities());
+                if (jwtTokenizer.validateToken(jwtToken, userDetails)) { //validate 메소드(util)에 있는 메소드로 토큰 검증
+                    var authenticationToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                //ㄴ> 요청에 대한 인증 세부 정보를 설정 (여기서 credentails 부여)
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    //ㄴ> 요청에 대한 인증 세부 정보를 설정 (여기서 credentails 부여)
 
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                //ㄴ> Spring Security의 SecurityContextHolder에 인증 정보 설정
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    //ㄴ> Spring Security의 SecurityContextHolder에 인증 정보 설정
+                }
             }
+            filterChain.doFilter(request, response);
+            //ㄴ>  다음 필터 체인으로 요청 전달
         }
-        filterChain.doFilter(request,response);
-        //ㄴ>  다음 필터 체인으로 요청 전달
-    }
 
-    @Override //인증을 건너뛸 URL 패턴이 있는지 확인, 패턴이 있는 경우 필터를 적용하지 않도록 설정
+    @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         return EXCLUDE_URL.stream().anyMatch(exclude -> exclude.equalsIgnoreCase(request.getServletPath()));
     }
-
 }

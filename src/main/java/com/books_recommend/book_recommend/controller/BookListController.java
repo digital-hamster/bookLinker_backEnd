@@ -179,10 +179,9 @@ class BookListController {
         List<BookDto> books
     ){}
 
-    @DeleteMapping("/{bookListId}/{memberId}")
-    ApiResponse<DeleteResponse> remove(@PathVariable Long bookListId,
-                                       @PathVariable Long memberId){
-        var removedId = service.remove(bookListId, memberId);
+    @DeleteMapping("/{bookListId}")
+    ApiResponse<DeleteResponse> remove(@PathVariable Long bookListId){
+        var removedId = service.remove(bookListId);
         var response = new DeleteResponse(removedId);
         return ApiResponse.success(response);
     }
