@@ -3,6 +3,7 @@ package com.books_recommend.book_recommend.controller;
 import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
+import com.books_recommend.book_recommend.dto.GetBookListDto;
 import com.books_recommend.book_recommend.service.BookListService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -106,13 +107,14 @@ class BookListController {
     record GetResponse(
         Long bookListId,
         Long memberId,
+        Boolean isWriter,
         String title,
         String content,
         String hashTag,
         String backImg,
         List<BookDto> books
     ) {
-        private static Page<GetResponse> from(Page<BookListDto> listDtos) {
+        private static Page<GetResponse> from(Page<GetBookListDto> listDtos) {
             List<GetResponse> getResponses = listDtos.getContent().stream()
                 .map(listDto -> {
                     List<BookDto> bookDtos = listDto.books().stream()
@@ -131,6 +133,7 @@ class BookListController {
                     return new GetResponse(
                         listDto.bookListId(),
                         listDto.memberId(),
+                        listDto.isWriter(),
                         listDto.title(),
                         listDto.content(),
                         listDto.hashTag(),

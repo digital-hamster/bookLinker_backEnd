@@ -5,6 +5,7 @@ import com.books_recommend.book_recommend.common.exception.BusinessLogicExceptio
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
+import com.books_recommend.book_recommend.dto.GetBookListDto;
 import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.entity.BookList;
 import com.books_recommend.book_recommend.entity.Member;
@@ -105,34 +106,46 @@ public class BookListService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookListDto> findSearchLists(BookListService.SearchRequirement requirement, Pageable pageable) {
+    public Page<GetBookListDto> findSearchLists(BookListService.SearchRequirement requirement, Pageable pageable) {
         var searchCondition = new BookListRepositoryCustom.SearchCondition(requirement.title);
         var lists = bookListRepository.searchTitle(searchCondition, pageable);
 
-        var dtos = lists.stream()
-            .map(list -> toListDto(list))
-            .toList();
-
-        return new PageImpl<>(
-            dtos,
-            lists.getPageable(),
-            lists.getTotalElements()
-        );
+        return dtosWithWriter(lists);
     }
+
     public record SearchRequirement(
         Optional<String> title
     ){}
 
     @Transactional(readOnly = true)
-    public Page<BookListDto> findAllLists(Pageable pageable) {
+    public Page<GetBookListDto> findAllLists(Pageable pageable) {
         var lists = bookListRepository.findActiveBookList(pageable);
 
-        var dtos = lists.stream()
-            .map(list -> toListDto(list))
+        return dtosWithWriter(lists);
+    }
+
+    private Page<GetBookListDto> dtosWithWriter(Page<BookList> lists) {
+        var dtosWithWriter = lists.stream()
+            .map(list -> {
+                var isWriter = isWriter(list, memberService);
+                var bookDtos = list.getBooks().stream()
+                    .map(this::toBookDto) // BookDto로 변환
+                    .collect(Collectors.toList());
+                return new GetBookListDto(
+                    bookDtos,
+                    list.getId(),
+                    isWriter,
+                    list.getMember().getId(),
+                    list.getTitle(),
+                    list.getContent(),
+                    list.getHashTag(),
+                    list.getBackImg()
+                );
+            })
             .toList();
 
         return new PageImpl<>(
-            dtos,
+            dtosWithWriter,
             lists.getPageable(),
             lists.getTotalElements()
         );
@@ -203,16 +216,7 @@ public class BookListService {
             .collect(Collectors.toList());
     }
 
-    public record GetBookListDto(
-        List<BookDto> books,
-        Long bookListId,
-        Boolean isWriter,
-        Long memberId,
-        String title,
-        String content,
-        String hashTag,
-        String backImg
-    ) {}
+
 
     @Transactional
     public Long remove(Long bookListId) {
