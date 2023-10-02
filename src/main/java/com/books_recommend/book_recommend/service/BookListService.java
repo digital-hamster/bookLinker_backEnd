@@ -1,5 +1,6 @@
 package com.books_recommend.book_recommend.service;
 
+import com.books_recommend.book_recommend.auth.util.SecurityUtil;
 import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
 import com.books_recommend.book_recommend.dto.BookDto;
@@ -173,19 +174,13 @@ public class BookListService {
 
         valifyList(list);
 
-        //TODO 토큰 이후 적용
-//        Member member = null;
-//        if (memberId.isPresent()) {
-//            member = memberRepository.findById(memberId.get())
-//                .orElse(null);
-//        }
-//        var isWriter = isWriter(list, member);
+        var isWriter = isWriter(list, memberService);
 
         var books = fromEntity(list);
         return new GetBookListDto(
             books,
             list.getId(),
-//            isWriter,
+            isWriter,
             list.getMember().getId(),
             list.getTitle(),
             list.getContent(),
@@ -193,9 +188,13 @@ public class BookListService {
             list.getBackImg());
     }
 
-    private static Boolean isWriter(BookList list,
-                                    Member member) {
-        return member != null && Objects.equals(member.getId(), list.getMember().getId());
+    private static Boolean isWriter(BookList list, MemberService memberService) {
+        if (SecurityUtil.hasToken() &&
+            memberService.findMember().getId() == list.getMember().getId()){
+                return true;
+            }
+
+        return false;
     }
 
     private List<BookDto> fromEntity(BookList list) {
@@ -207,7 +206,7 @@ public class BookListService {
     public record GetBookListDto(
         List<BookDto> books,
         Long bookListId,
-//        Boolean isWriter,
+        Boolean isWriter,
         Long memberId,
         String title,
         String content,

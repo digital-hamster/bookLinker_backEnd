@@ -157,7 +157,7 @@ class BookListController {
         var listDto = service.getBookList(bookListId);
         GetOneResponse response = new GetOneResponse(
             listDto.bookListId(),
-//            listDto.isWriter(),
+            listDto.isWriter(),
             listDto.memberId(),
             listDto.title(),
             listDto.content(),
@@ -170,7 +170,7 @@ class BookListController {
 
     record GetOneResponse(
         Long bookListId,
-//        Boolean isWriter,
+        Boolean isBookListWriter,
         Long writerId,
         String title,
         String content,
