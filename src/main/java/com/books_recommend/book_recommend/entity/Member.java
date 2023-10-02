@@ -56,7 +56,7 @@ public class Member extends BaseTimeEntity {
         MEMBER("일반회원"),
         ADMIN("관리자");
 
-        private final String status;
+        private final String roles;
     }
 
     public Member(String email,
