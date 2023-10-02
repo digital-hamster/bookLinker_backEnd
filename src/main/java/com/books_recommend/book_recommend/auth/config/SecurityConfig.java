@@ -64,6 +64,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/members/authenticate", "/members").permitAll()
                     .requestMatchers(HttpMethod.GET, "/books", "/booklists/search", "/booklists/**").permitAll()
                     .requestMatchers(HttpMethod.PUT, "booklists/**").permitAll()
+                    .requestMatchers(HttpMethod.DELETE, "booklists/**").permitAll()
                     .anyRequest().authenticated()
             )
 

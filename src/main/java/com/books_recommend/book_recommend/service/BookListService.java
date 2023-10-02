@@ -171,6 +171,8 @@ public class BookListService {
         var list = bookListRepository.findById(bookListId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
 
+        valifyList(list);
+
         //TODO 토큰 이후 적용
 //        Member member = null;
 //        if (memberId.isPresent()) {
@@ -217,11 +219,17 @@ public class BookListService {
     public Long remove(Long bookListId) {
         var member = memberService.findMember();
 
-        var bookList = bookListRepository.findById(bookListId)
+        var list = bookListRepository.findById(bookListId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
 
-        bookList.remove();
-        return bookList.getId();
+        valifyList(list);
+
+        if(!Objects.equals(member.getId(), list.getMember().getId())){
+            throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
+        }
+
+        list.remove();
+        return list.getId();
     }
 
     @Transactional
