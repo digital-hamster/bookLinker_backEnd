@@ -190,12 +190,11 @@ class BookListController {
         Long bookListId
     ){}
 
-    @PutMapping("/{bookListId}/{memberId}")
+    @PutMapping("/{bookListId}")
     ApiResponse<UpdateResponse> update(@RequestBody UpdateRequest request,
-                                       @PathVariable Long bookListId,
-                                       @PathVariable Long memberId){
+                                       @PathVariable Long bookListId){
 
-        var updatedId = service.update(request.toRequirement(), bookListId, memberId);
+        var updatedId = service.update(request.toRequirement(), bookListId);
         var response = new UpdateResponse(updatedId);
 
         return ApiResponse.success(response);

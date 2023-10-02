@@ -226,15 +226,17 @@ public class BookListService {
 
     @Transactional
     public Long update(UpdateRequirement requirement,
-                       Long bookListId,
-                       Long memberId) {
-        var member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+                       Long bookListId) {
+        var member = memberService.findMember();
 
-        var list = bookListRepository.findActiveBookList(bookListId);
-            if(list == null){
-                throw new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND);
-            }
+        var list = bookListRepository.findById(bookListId)
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+
+        valifyList(list);
+
+        if(list.getMember().getId() != member.getId()){
+            throw new BusinessLogicException(ExceptionCode.IS_NOT_WRITER);
+        }
 
         var updateContent = fromRequirement(requirement);
 
@@ -299,5 +301,11 @@ public class BookListService {
             String url,
             String recommendation
         ) {}
+    }
+
+    public static void valifyList(BookList list){
+        if(list.getDeletedAt()!= null){
+            throw new BusinessLogicException(ExceptionCode.LIST_ALREADY_DELETED);
+        }
     }
 }
