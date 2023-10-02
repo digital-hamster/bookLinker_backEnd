@@ -4,7 +4,9 @@ import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.service.BookListService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,8 +25,8 @@ import java.util.stream.Collectors;
 class BookListController {
     private final BookListService service;
 
-    @PostMapping()
-    ApiResponse<CreateResponse> createBookList(@RequestBody CreateRequest request) {
+    @PostMapping
+    ApiResponse<CreateResponse> createBookList(@RequestBody @Valid CreateRequest request) {
         var bookListId = service.create(request.toCreateRequirement());
 
         var response = new CreateResponse(bookListId);
@@ -32,10 +34,17 @@ class BookListController {
     }
 
     record CreateRequest(
+        @NotBlank(message = "리스트 제목을 입력해 주세요.")
         String title,
+
+        @NotBlank(message = "리스트 내용을 입력해 주세요.")
         String content,
-        String hashTag,
-        String backImg,
+
+        String hashTag, //hashTag 선택
+
+        String backImg, //backImg 선택
+
+        @NotEmpty(message = "책 정보를 입력해 주세요.")
         List<BookRequest> books
     ) {
         private BookListService.CreateRequirement toCreateRequirement() {
@@ -61,12 +70,25 @@ class BookListController {
         }
 
         record BookRequest(
+            @NotBlank(message = "책의 제목을 기입하세요.")
             String title,
+
+            @NotBlank(message = "책의 작가를 기입하세요.")
             String authors,
+
+            @NotBlank(message = "책의 isbn을 기입하세요.")
             String isbn,
+
+            @NotBlank(message = "책의 출판사를 기입하세요.")
             String publisher,
+
+            @NotBlank(message = "책의 이미지를 기입하세요.")
             String image,
+
+            @NotBlank(message = "책의 링크 기입하세요.")
             String url,
+
+            @NotBlank(message = "책에 대한 추천사를 남겨주세요.")
             String recommendation
         ) {}
     }
@@ -106,6 +128,7 @@ class BookListController {
     record GetResponse(
         Long bookListId,
         Long memberId,
+        Boolean isWriter,
         String title,
         String content,
         String hashTag,
@@ -131,6 +154,7 @@ class BookListController {
                     return new GetResponse(
                         listDto.bookListId(),
                         listDto.memberId(),
+                        listDto.isWriter(),
                         listDto.title(),
                         listDto.content(),
                         listDto.hashTag(),
@@ -157,7 +181,7 @@ class BookListController {
         var listDto = service.getBookList(bookListId);
         GetOneResponse response = new GetOneResponse(
             listDto.bookListId(),
-//            listDto.isWriter(),
+            listDto.isWriter(),
             listDto.memberId(),
             listDto.title(),
             listDto.content(),
@@ -170,7 +194,7 @@ class BookListController {
 
     record GetOneResponse(
         Long bookListId,
-//        Boolean isWriter,
+        Boolean isWriter,
         Long writerId,
         String title,
         String content,
@@ -190,21 +214,27 @@ class BookListController {
         Long bookListId
     ){}
 
-    @PutMapping("/{bookListId}/{memberId}")
-    ApiResponse<UpdateResponse> update(@RequestBody UpdateRequest request,
-                                       @PathVariable Long bookListId,
-                                       @PathVariable Long memberId){
+    @PutMapping("/{bookListId}")
+    ApiResponse<UpdateResponse> update(@RequestBody @Valid UpdateRequest request,
+                                       @PathVariable Long bookListId){
 
-        var updatedId = service.update(request.toRequirement(), bookListId, memberId);
+        var updatedId = service.update(request.toRequirement(), bookListId);
         var response = new UpdateResponse(updatedId);
 
         return ApiResponse.success(response);
     }
     record UpdateRequest(
+        @NotBlank(message = "리스트 제목을 입력해 주세요.")
         String title,
+
+        @NotBlank(message = "리스트 내용을 입력해 주세요.")
         String content,
+
         String hashTag,
+
         String backImg,
+
+        @NotEmpty(message = "책 정보를 입력해 주세요.")
         List<UpdateRequest.UpdateBookRequest> books
     ){
         private BookListService.UpdateRequirement toRequirement() {
@@ -230,14 +260,27 @@ class BookListController {
         }
 
         record UpdateBookRequest(
+            @NotBlank(message = "책의 제목을 기입하세요.")
             String title,
+
+            @NotBlank(message = "책의 작가를 기입하세요.")
             String authors,
+
+            @NotBlank(message = "책의 isbn을 기입하세요.")
             String isbn,
+
+            @NotBlank(message = "책의 출판사를 기입하세요.")
             String publisher,
+
+            @NotBlank(message = "책의 이미지를 기입하세요.")
             String image,
+
+            @NotBlank(message = "책의 링크 기입하세요.")
             String url,
+
+            @NotBlank(message = "책에 대한 추천사를 남겨주세요.")
             String recommendation
-        ) { }
+        ) {}
 
 
 

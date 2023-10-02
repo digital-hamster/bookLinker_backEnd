@@ -25,6 +25,7 @@ public class SecurityUtil {
 
         throw new BusinessLogicException(ExceptionCode.AUTHENTICATION_FAILED_MEMBER);
     }
+
     public static Authentication roadAuthentication(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -34,6 +35,15 @@ public class SecurityUtil {
         }
 
         return authentication;
+    }
+
+    //토큰이 없는 사용자 / 토큰이 있는 사용자를 분간하기 위한 메소드 (GetBookList의 isWriter)
+    public static Boolean hasToken() {
+        var authentication = roadAuthentication();
+        if (authentication.getPrincipal() instanceof UserDetails) {
+            return true;
+        }
+        return false;
     }
 }
 
