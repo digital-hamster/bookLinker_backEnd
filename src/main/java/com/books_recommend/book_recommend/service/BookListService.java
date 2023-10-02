@@ -5,14 +5,12 @@ import com.books_recommend.book_recommend.common.exception.BusinessLogicExceptio
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
-import com.books_recommend.book_recommend.dto.GetBookListDto;
 import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.entity.BookList;
 import com.books_recommend.book_recommend.entity.Member;
 import com.books_recommend.book_recommend.repository.BookListRepository;
 import com.books_recommend.book_recommend.repository.BookListRepositoryCustom;
 import com.books_recommend.book_recommend.repository.BookRepository;
-import com.books_recommend.book_recommend.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -32,7 +30,6 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class BookListService {
     private final BookListRepository bookListRepository;
-    private final MemberRepository memberRepository;
     private final BookRepository bookRepository;
     private final MemberService memberService;
 
@@ -106,7 +103,7 @@ public class BookListService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GetBookListDto> findSearchLists(BookListService.SearchRequirement requirement, Pageable pageable) {
+    public Page<BookListDto> findSearchLists(BookListService.SearchRequirement requirement, Pageable pageable) {
         var searchCondition = new BookListRepositoryCustom.SearchCondition(requirement.title);
         var lists = bookListRepository.searchTitle(searchCondition, pageable);
 
@@ -118,20 +115,20 @@ public class BookListService {
     ){}
 
     @Transactional(readOnly = true)
-    public Page<GetBookListDto> findAllLists(Pageable pageable) {
+    public Page<BookListDto> findAllLists(Pageable pageable) {
         var lists = bookListRepository.findActiveBookList(pageable);
 
         return dtosWithWriter(lists);
     }
 
-    private Page<GetBookListDto> dtosWithWriter(Page<BookList> lists) {
+    private Page<BookListDto> dtosWithWriter(Page<BookList> lists) {
         var dtosWithWriter = lists.stream()
             .map(list -> {
                 var isWriter = isWriter(list, memberService);
                 var bookDtos = list.getBooks().stream()
                     .map(this::toBookDto) // BookDto로 변환
                     .collect(Collectors.toList());
-                return new GetBookListDto(
+                return new BookListDto(
                     bookDtos,
                     list.getId(),
                     isWriter,
@@ -151,22 +148,6 @@ public class BookListService {
         );
     }
 
-    private BookListDto toListDto(BookList list) {
-        var bookDtos = list.getBooks().stream()
-            .map(this::toBookDto)
-            .collect(Collectors.toList());
-
-        return new BookListDto(
-            bookDtos,
-            list.getId(),
-            list.getMember().getId(),
-            list.getTitle(),
-            list.getContent(),
-            list.getHashTag(),
-            list.getBackImg()
-        );
-    }
-
     private BookDto toBookDto(Book book) {
         return new BookDto(
             book.getId(),
@@ -181,16 +162,15 @@ public class BookListService {
     }
 
     @Transactional(readOnly = true)
-    public GetBookListDto getBookList(Long bookListId) {
+    public BookListDto getBookList(Long bookListId) {
         var list = bookListRepository.findById(bookListId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
 
         valifyList(list);
-
         var isWriter = isWriter(list, memberService);
-
         var books = fromEntity(list);
-        return new GetBookListDto(
+
+        return new BookListDto(
             books,
             list.getId(),
             isWriter,
@@ -206,7 +186,6 @@ public class BookListService {
             memberService.findMember().getId() == list.getMember().getId()){
                 return true;
             }
-
         return false;
     }
 
@@ -215,8 +194,6 @@ public class BookListService {
             .map(BookDto::fromEntity)
             .collect(Collectors.toList());
     }
-
-
 
     @Transactional
     public Long remove(Long bookListId) {
@@ -317,6 +294,12 @@ public class BookListService {
     public static void valifyList(BookList list){
         if(list.getDeletedAt()!= null){
             throw new BusinessLogicException(ExceptionCode.LIST_ALREADY_DELETED);
+        }
+    }
+
+    private static void loginException(){
+        if(!SecurityUtil.hasToken()){
+            throw new BusinessLogicException(ExceptionCode.MEMBER_NEED_LOGIN);
         }
     }
 }

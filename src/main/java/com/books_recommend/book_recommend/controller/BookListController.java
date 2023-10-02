@@ -3,9 +3,7 @@ package com.books_recommend.book_recommend.controller;
 import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
-import com.books_recommend.book_recommend.dto.GetBookListDto;
 import com.books_recommend.book_recommend.service.BookListService;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -114,7 +112,7 @@ class BookListController {
         String backImg,
         List<BookDto> books
     ) {
-        private static Page<GetResponse> from(Page<GetBookListDto> listDtos) {
+        private static Page<GetResponse> from(Page<BookListDto> listDtos) {
             List<GetResponse> getResponses = listDtos.getContent().stream()
                 .map(listDto -> {
                     List<BookDto> bookDtos = listDto.books().stream()
@@ -173,7 +171,7 @@ class BookListController {
 
     record GetOneResponse(
         Long bookListId,
-        Boolean isBookListWriter,
+        Boolean isWriter,
         Long writerId,
         String title,
         String content,
