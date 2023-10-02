@@ -1,6 +1,7 @@
 package com.books_recommend.book_recommend.auth.config;
 
 import com.books_recommend.book_recommend.auth.handle.JwtAuthenticationEntryPoint;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -20,7 +22,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-//@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -63,16 +64,14 @@ public class SecurityConfig {
 //                    .requestMatchers("members/authenticate", "/members", "/members/udpate", "/books").permitAll()
                     .requestMatchers(HttpMethod.POST, "/members/authenticate", "/members").permitAll()
                     .requestMatchers(HttpMethod.GET, "/books", "/booklists/search", "/booklists/**").permitAll()
-                    .requestMatchers(HttpMethod.PUT, "booklists/**").permitAll()
+                    .requestMatchers(HttpMethod.PUT, "/booklists","booklists/**").permitAll()
                     .requestMatchers(HttpMethod.DELETE, "booklists/**").permitAll()
                     .anyRequest().authenticated()
             )
 
-
-
             .exceptionHandling(customize -> customize
-                    .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                // 인증되지 않은 사용자에게 호출(에러핸들러)
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)// 인증되지 않은 사용자에게 호출(에러핸들러)
+                .accessDeniedHandler(customAccessDeniedHandler())
             )
 
             .sessionManagement(session -> session //Session 미사용
@@ -98,6 +97,15 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean //TODO 다른 처리로 변경하기
+    public AccessDeniedHandler customAccessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"Access Denied: You do not have permission to access this resource\"}");
+        };
     }
 }
 
