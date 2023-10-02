@@ -32,13 +32,11 @@ public class BookListService {
     private final BookListRepository bookListRepository;
     private final MemberRepository memberRepository;
     private final BookRepository bookRepository;
+    private final MemberService memberService;
 
     @Transactional
-    public Long create(CreateRequirement requirement,
-                       Long memberId) {
-        var member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
-
+    public Long create(CreateRequirement requirement) {
+        var member = memberService.findMember();
         var bookList = createBookList(requirement);
         var books = createBooks(requirement, bookList);
 
@@ -216,17 +214,12 @@ public class BookListService {
     ) {}
 
     @Transactional
-    public Long remove(Long bookListId,
-                       Long memberId) {
-        var member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    public Long remove(Long bookListId) {
+        var member = memberService.findMember();
 
         var bookList = bookListRepository.findById(bookListId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
 
-        if (!Objects.equals(member.getId(), memberId)) {
-            throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_DELETE_LIST);
-        }
         bookList.remove();
         return bookList.getId();
     }

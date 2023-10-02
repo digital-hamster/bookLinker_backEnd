@@ -23,10 +23,9 @@ import java.util.stream.Collectors;
 class BookListController {
     private final BookListService service;
 
-    @PostMapping("/{memberId}")
-    ApiResponse<CreateResponse> createBookList(@RequestBody CreateRequest request,
-                                               @PathVariable Long memberId) {
-        var bookListId = service.create(request.toCreateRequirement(), memberId);
+    @PostMapping()
+    ApiResponse<CreateResponse> createBookList(@RequestBody CreateRequest request) {
+        var bookListId = service.create(request.toCreateRequirement());
 
         var response = new CreateResponse(bookListId);
         return ApiResponse.success(response);
@@ -180,10 +179,9 @@ class BookListController {
         List<BookDto> books
     ){}
 
-    @DeleteMapping("/{bookListId}/{memberId}")
-    ApiResponse<DeleteResponse> remove(@PathVariable Long bookListId,
-                                       @PathVariable Long memberId){
-        var removedId = service.remove(bookListId, memberId);
+    @DeleteMapping("/{bookListId}")
+    ApiResponse<DeleteResponse> remove(@PathVariable Long bookListId){
+        var removedId = service.remove(bookListId);
         var response = new DeleteResponse(removedId);
         return ApiResponse.success(response);
     }
