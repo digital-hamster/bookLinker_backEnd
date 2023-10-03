@@ -26,7 +26,9 @@ public class MemberService {
     }
 
     public MemberDto createMember(Requirement requirement){
-        String encodedPassword = passwordEncoder.encode(requirement.password);
+        var encodedPassword = passwordEncoder.encode(requirement.password);
+        emailVerify(requirement.email, repository);
+
         var member = new Member(
             requirement.email,
             requirement.nickname,
@@ -35,6 +37,12 @@ public class MemberService {
         Member saveMember = repository.save(member);
 
         return MemberDto.fromEntity(saveMember);
+    }
+
+    private static void emailVerify(String email, MemberRepository repository){
+        if(repository.existsByEmail(email)){
+            throw new BusinessLogicException(ExceptionCode.EMAIL_EXISTED);
+        }
     }
 
     public record Requirement(

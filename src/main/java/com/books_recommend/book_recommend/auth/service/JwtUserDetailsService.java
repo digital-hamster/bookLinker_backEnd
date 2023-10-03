@@ -57,7 +57,7 @@ public class JwtUserDetailsService implements UserDetailsService {
     public Member authenticateByEmailAndPassword(String email,
                                                  String password) {
         var member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMAIL_NOT_CORRECT));
 
         //입력된 비밀번호와 데이터베이스에 저장된 비밀번호를 비교
         if (!passwordEncoder.matches(password, member.getPassword())) {
