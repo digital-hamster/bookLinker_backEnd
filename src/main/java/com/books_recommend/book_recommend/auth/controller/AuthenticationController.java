@@ -1,6 +1,7 @@
 package com.books_recommend.book_recommend.auth.controller;
 
 import com.books_recommend.book_recommend.auth.service.AuthenticationService;
+import com.books_recommend.book_recommend.common.web.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,7 @@ class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping
-    public ResponseEntity createAuthenticationToken(@RequestBody JwtRequest request){
+    public ApiResponse<JwtResponse> createAuthenticationToken(@RequestBody JwtRequest request){
         var requirement = new AuthenticationService.Requirement(
             request.email,
             request.password
@@ -23,13 +24,11 @@ class AuthenticationController {
 
         var authenticateInfo = service.authenticate(requirement);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + authenticateInfo.token());
+        var response = new JwtResponse(
+            authenticateInfo.token()
+        );
 
-        return ResponseEntity
-            .ok()
-            .headers(headers)
-            .body(null);
+        return ApiResponse.success(response);
     }
 
     record JwtRequest(
