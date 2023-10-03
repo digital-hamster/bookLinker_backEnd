@@ -21,7 +21,7 @@ public class JwtTokenizer {
 
     private static final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    public static final long JWT_TOKEN_VALIDITY = 24 * 60 * 60;
 
     //JWT 토큰에서 ID추출
     public String getUsernameFromToken(String token) { //claims에 id만 담았음
