@@ -1,5 +1,6 @@
 package com.books_recommend.book_recommend.service;
 
+import com.books_recommend.book_recommend.auth.util.SecurityUtil;
 import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
 import com.books_recommend.book_recommend.dto.CommentDto;
@@ -20,15 +21,15 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final MemberRepository memberRepository;
     private final BookListRepository bookListRepository;
+    private final MemberService memberService;
 
 
 
     @Transactional
-    public Long create(CreateRequirement requirement, Long memberId, Long bookListId){
+    public Long create(CreateRequirement requirement, Long bookListId){
 
-        var member = findMember(memberId);
+        var member = memberService.findMember();
         var bookList = findBookList(bookListId);
         var comment = createComment(requirement);
 
@@ -49,28 +50,38 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentDto> getComments(Long bookListId){
-//        findMember(memberId);
         findBookList(bookListId);
 
         List<Comment> comments = commentRepository.findAllByBookListId(bookListId);
         var dtos = comments.stream()
-            .map(comment -> new CommentDto(
-                comment.getId(),
-                comment.getMember().getId(),
-                comment.getBookList().getId(),
-                comment.getContent(),
-                comment.getCreatedAt()
-                //작성자 여부는 토큰이 만들어진 이후에
-            ))
+            .map(comment -> {
+                boolean isWriter = isWriter(comment, memberService);
+                return new CommentDto(
+                    comment.getId(),
+                    comment.getMember().getId(),
+                    comment.getBookList().getId(),
+                    isWriter,
+                    comment.getContent(),
+                    comment.getCreatedAt()
+                );
+            })
             .toList();
 
         return dtos;
     }
 
+    private static Boolean isWriter(Comment comment, MemberService memberService){
+        if (SecurityUtil.hasToken() &&
+            memberService.findMember().getId() == comment.getMember().getId()){
+            return true;
+        }
+        return false;
+    }
+
     @Transactional
-    public Long update(String content, Long commentId, Long memberId){
-        var member = findMember(memberId);
-        var bookList = findBookListByCommentId(commentId);
+    public void update(String content, Long commentId){
+        var member = memberService.findMember();
+        findBookListByCommentId(commentId);
 
         var comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND));
@@ -78,15 +89,13 @@ public class CommentService {
 
 
         comment.update(content);
-
-        var savedComment = commentRepository.save(comment);
-        return savedComment.getId();
+        commentRepository.save(comment);
     }
 
     @Transactional
-    public void delete(Long commentId, Long memberId){
-        var member = findMember(memberId);
-        var bookList = findBookListByCommentId(commentId);
+    public void delete(Long commentId){
+        var member = memberService.findMember();
+        findBookListByCommentId(commentId);
 
 
         var comment = commentRepository.findById(commentId)
@@ -107,11 +116,6 @@ public class CommentService {
     private BookList findBookList(Long bookListId) {
         return bookListRepository.findById(bookListId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
-    }
-
-    private Member findMember(Long memberId){
-        return memberRepository.findById(memberId)
-            .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
     }
 
     private BookList findBookListByCommentId(Long commentId){

@@ -17,12 +17,10 @@ class CommentController {
 
     private final CommentService service;
 
-    @PostMapping("{bookListId}/{memberId}")
+    @PostMapping("/{bookListId}")
     ApiResponse<CreateRequest.CreateResponse> createComment(@RequestBody CreateRequest request,
-                                          @PathVariable Long bookListId,
-                                          @PathVariable Long memberId
-                                          ){
-        var savedComment = service.create(request.toCreateRequirement(), memberId, bookListId);
+                                          @PathVariable Long bookListId){
+        var savedComment = service.create(request.toCreateRequirement(), bookListId);
 
         var response = new CreateRequest.CreateResponse(savedComment);
         return ApiResponse.success(response);
@@ -42,7 +40,7 @@ class CommentController {
         ){}
     }
 
-    @GetMapping("{bookListId}")
+    @GetMapping("/{bookListId}")
     ApiResponse<List<GetResponse>> getComments(@PathVariable Long bookListId){
 
         var dtos = service.getComments(bookListId);
@@ -50,6 +48,7 @@ class CommentController {
                 .map(dto -> new GetResponse(
                     dto.commentId(),
                     dto.memberId(),
+                    dto.isCommentWriter(),
                     dto.bookListId(),
                     dto.content(),
                     dto.createdAt()
@@ -62,30 +61,29 @@ class CommentController {
     record GetResponse(
         Long commentId,
         Long memberId,
+        Boolean isCommentWriter,
         Long bookListId,
         String content,
         LocalDateTime createAt
 //        Boolean isWriter
     ){}
 
-    @PutMapping("{bookListid}/{memberId}")
-    ApiResponse<Long> update(@RequestBody UpdateRequest request,
-                             @PathVariable Long bookListid,
-                             @PathVariable Long memberId){
+    @PutMapping("{commentId}")
+    ApiResponse update(@RequestBody UpdateRequest request,
+                             @PathVariable Long commentId){
         var content = request.content;
-        var updatedId = service.update(content, bookListid, memberId);
+        service.update(content, commentId);
 
-        return ApiResponse.success(updatedId);
+        return ApiResponse.success();
     }
 
     record UpdateRequest(
         String content
     ){}
 
-    @DeleteMapping("{commentId}/{memberId}")
-    ApiResponse delete(@PathVariable Long commentId,
-                             @PathVariable Long memberId){
-        service.delete(commentId, memberId);
+    @DeleteMapping("/{commentId}")
+    ApiResponse delete(@PathVariable Long commentId){
+        service.delete(commentId);
 
         return ApiResponse.success();
     }
