@@ -24,8 +24,10 @@ class AuthenticationController {
 
         var authenticateInfo = service.authenticate(requirement);
 
+        var token = "Bearer "+ authenticateInfo.token();
+
         var response = new JwtResponse(
-            authenticateInfo.token()
+            token
         );
 
         return ApiResponse.success(response);
