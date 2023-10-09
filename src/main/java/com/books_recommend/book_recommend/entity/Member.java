@@ -36,10 +36,6 @@ public class Member extends BaseTimeEntity {
     @Column
     private LocalDateTime deletedAt;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Comment> comments = new ArrayList<>();
-
     @Getter
     @RequiredArgsConstructor
     public enum ROLES {

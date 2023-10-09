@@ -31,17 +31,19 @@ public class CommentService {
 
         var member = memberService.findMember();
         var bookList = findBookList(bookListId);
-        var comment = createComment(requirement);
+        var comment = createComment(requirement, member, bookList);
 
-        comment.addMember(member);
-        comment.addBookList(bookList);
+//        comment.addMember(member);
+//        comment.addBookList(bookList);
 
         var savedComment = commentRepository.save(comment);
         return savedComment.getId();
     }
-    private static Comment createComment(CreateRequirement createRequirement){
+    private static Comment createComment(CreateRequirement createRequirement, Member member, BookList bookList){
         return new Comment(
-            createRequirement.content
+            createRequirement.content,
+            bookList.getId(),
+            member.getId()
         );
     }
     public record CreateRequirement(
@@ -58,8 +60,8 @@ public class CommentService {
                 boolean isWriter = isWriter(comment, memberService);
                 return new CommentDto(
                     comment.getId(),
-                    comment.getMember().getId(),
-                    comment.getBookList().getId(),
+                    comment.getMemberId(),
+                    comment.getBookListId(),
                     isWriter,
                     comment.getContent(),
                     comment.getCreatedAt()
@@ -72,7 +74,7 @@ public class CommentService {
 
     private static Boolean isWriter(Comment comment, MemberService memberService){
         if (SecurityUtil.hasToken() &&
-            memberService.findMember().getId() == comment.getMember().getId()){
+            memberService.findMember().getId() == comment.getMemberId()){
             return true;
         }
         return false;
@@ -106,7 +108,7 @@ public class CommentService {
     }
 
     private static void checkWriter(Comment comment, Member member){
-        if(comment.getMember().getId() != member.getId()){
+        if(comment.getMemberId() != member.getId()){
             throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
         }
     }

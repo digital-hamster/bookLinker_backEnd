@@ -34,17 +34,13 @@ public class BookList extends BaseTimeEntity{
     private String hashTag; //content2 느낌
 
     @Column
-    @OneToMany(mappedBy = "bookList", cascade = CascadeType.ALL)
-    private List<Book> books = new ArrayList<>();
+    private LocalDateTime deletedAt;
 
     private Long memberId;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "bookList", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Comment> comments = new ArrayList<>();
-
     @Column
-    private LocalDateTime deletedAt;
+    @OneToMany(mappedBy = "bookList", cascade = CascadeType.ALL)
+    private List<Book> books = new ArrayList<>();
 
     public BookList(
             String title,
