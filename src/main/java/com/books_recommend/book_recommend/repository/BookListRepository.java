@@ -9,6 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookListRepository extends JpaRepository<BookList, Long>,
 QuerydslPredicateExecutor<BookList>,
@@ -22,6 +23,8 @@ BookListRepositoryCustom{
 
     Page<BookList> searchTitle(SearchCondition searchCondition, Pageable pageable);
 
-    @Query("SELECT b FROM BookList b JOIN b.comments c WHERE c.id = :commentId")
+    @Query("SELECT b FROM BookList b WHERE b.id = (SELECT c.bookListId FROM Comment c WHERE c.id = :commentId)")
     BookList findBookListByCommentId(Long commentId);
+
+    Optional<BookList> findById(Long bookListId);
 }

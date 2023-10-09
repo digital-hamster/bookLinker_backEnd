@@ -34,37 +34,26 @@ public class BookList extends BaseTimeEntity{
     private String hashTag; //content2 느낌
 
     @Column
-    @OneToMany(mappedBy = "bookList", cascade = CascadeType.REMOVE)
-    private List<Book> books = new ArrayList<>();
+    private LocalDateTime deletedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "bookList", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Comment> comments = new ArrayList<>();
+    private Long memberId;
 
     @Column
-    private LocalDateTime deletedAt;
+    @OneToMany(mappedBy = "bookList", cascade = CascadeType.ALL)
+    private List<Book> books = new ArrayList<>();
 
     public BookList(
             String title,
             String content,
             String hashTag,
-            String backImg
+            String backImg,
+            Long memberId
     ){
         this.title = title;
         this.content = content;
         this.hashTag = hashTag;
         this.backImg = backImg;
-    }
-
-    public void addMember(Member member) {
-        this.member = member;
-        if (!member.getBookLists().contains(this)) {
-            member.getBookLists().add(this);
-        }
+        this.memberId = memberId;
     }
 
     public void addBooks(List<Book> books) {
