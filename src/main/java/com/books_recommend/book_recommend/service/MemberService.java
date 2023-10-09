@@ -49,11 +49,7 @@ public class MemberService {
             String email,
             String nickname,
             String password
-    ){
-        public Member toEntity(){
-            return new Member(email, nickname, password);
-        }
-    }
+    ){}
 
     @Transactional
     public void updateMember(PutRequirement requirement){
