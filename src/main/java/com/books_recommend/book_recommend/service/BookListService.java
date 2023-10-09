@@ -36,25 +36,24 @@ public class BookListService {
     @Transactional
     public Long create(CreateRequirement requirement) {
         var member = memberService.findMember();
-        var bookList = createBookList(requirement);
+        var bookList = createBookList(requirement, member);
         var books = createBooks(requirement, bookList);
 
         bookList.addBooks(books);
-        bookList.addMember(member);
 
         var savedBookList = bookListRepository.save(bookList);
-        addMapping(books, bookList, member);
+        addMapping(books, bookList);
         bookRepository.saveAll(books); //자동적으로 books 저장이 안됨
 
         return savedBookList.getId();
     }
 
     private void addMapping(List<Book> books,
-                            BookList bookList,
-                            Member member) {
+                            BookList bookList
+    ) {
         books.forEach(book -> {
             book.addBookList(bookList);
-            book.addMember(member);
+//            book.addMember(member);
         });
     }
 
@@ -74,12 +73,13 @@ public class BookListService {
             .toList();
     }
 
-    private static BookList createBookList(CreateRequirement requirement) {
+    private static BookList createBookList(CreateRequirement requirement, Member member) {
         return new BookList(
             requirement.title,
             requirement.content,
             requirement.hashTag,
-            requirement.backImg
+            requirement.backImg,
+            member.getId()
         );
     }
 
@@ -132,7 +132,7 @@ public class BookListService {
                     bookDtos,
                     list.getId(),
                     isWriter,
-                    list.getMember().getId(),
+                    list.getMemberId(),
                     list.getTitle(),
                     list.getContent(),
                     list.getHashTag(),
@@ -174,7 +174,7 @@ public class BookListService {
             books,
             list.getId(),
             isWriter,
-            list.getMember().getId(),
+            list.getMemberId(),
             list.getTitle(),
             list.getContent(),
             list.getHashTag(),
@@ -183,7 +183,7 @@ public class BookListService {
 
     private static Boolean isWriter(BookList list, MemberService memberService) {
         if (SecurityUtil.hasToken() &&
-            memberService.findMember().getId() == list.getMember().getId()){
+            memberService.findMember().getId() == list.getMemberId()){
                 return true;
             }
         return false;
@@ -204,7 +204,7 @@ public class BookListService {
 
         valifyList(list);
 
-        if(!Objects.equals(member.getId(), list.getMember().getId())){
+        if(!Objects.equals(member.getId(), list.getMemberId())){
             throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
         }
 
@@ -222,17 +222,17 @@ public class BookListService {
 
         valifyList(list);
 
-        if(list.getMember().getId() != member.getId()){
+        if(list.getMemberId() != member.getId()){
             throw new BusinessLogicException(ExceptionCode.IS_NOT_WRITER);
         }
 
-        var updateContent = fromRequirement(requirement);
+        var updateContent = fromRequirement(requirement, member);
 
         var books = bookRepository.findByBookListId(bookListId);
         var updateBooksContent = fromRequirement(requirement, list);
 
 
-        if(!Objects.equals(member.getId(), list.getMember().getId())){
+        if(!Objects.equals(member.getId(), list.getMemberId())){
             throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
         }
 
@@ -247,12 +247,13 @@ public class BookListService {
         return list.getId();
     }
 
-    private static BookList fromRequirement(UpdateRequirement requirement) {
+    private static BookList fromRequirement(UpdateRequirement requirement, Member member) {
         return new BookList(
             requirement.title,
             requirement.content,
             requirement.hashTag,
-            requirement.backImg
+            requirement.backImg,
+            member.getId()
         );
     }
 
