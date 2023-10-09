@@ -45,11 +45,6 @@ public class Book extends BaseTimeEntity {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
-
-    @JsonIgnore
-    @ManyToOne
     @JoinColumn(name = "book_list_id")
     private BookList bookList;
 
@@ -74,13 +69,6 @@ public class Book extends BaseTimeEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
-    //booklist 양방향 관계를 설정
-    public void addMember(Member member) {
-        this.member = member;
-        if (!member.getBooks().contains(this)) {
-            member.getBooks().add(this);
-        }
-    }
 
     public void addBookList(BookList bookList) {
         this.bookList = bookList;

@@ -23,7 +23,7 @@ BookListRepositoryCustom{
 
     Page<BookList> searchTitle(SearchCondition searchCondition, Pageable pageable);
 
-    @Query("SELECT b FROM BookList b JOIN b.comments c WHERE c.id = :commentId")
+    @Query("SELECT b FROM BookList b WHERE b.id = (SELECT c.bookListId FROM Comment c WHERE c.id = :commentId)")
     BookList findBookListByCommentId(Long commentId);
 
     Optional<BookList> findById(Long bookListId);
