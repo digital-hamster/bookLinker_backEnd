@@ -32,7 +32,10 @@ import lombok.Getter;
         //Comment
         COMMENT_NOT_FOUND("존재하지 않는 댓글 입니다."),
 
-        BOOK_NOT_FOUND("존재하지 않는 책입니다.");
+        BOOK_NOT_FOUND("존재하지 않는 책입니다."),
+
+        //좋아요
+        FAVORITE_NOT_FOUND("좋아요 이력이 없습니다.");
 
 
         private String message;
