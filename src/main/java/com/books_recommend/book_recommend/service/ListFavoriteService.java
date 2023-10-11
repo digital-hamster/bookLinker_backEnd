@@ -41,18 +41,24 @@ public class ListFavoriteService {
 
     @Transactional
     public ListFavoriteDto delete(Long bookListId, Long listFavoriteId){
-        var member = memberService.findMember();
-        var bookList = bookListService.findBookListById(bookListId);
-        varifyListFavorite(listFavoriteId, bookListId);
+        memberService.findMember();
+        bookListService.findBookListById(bookListId);
+        var favorite = getFavorite(listFavoriteId);
 
-        return new ListFavoriteDto(listFavoriteId, member.getId(), bookList.getId());
+        favoriteRepository.delete(favorite);
+
+        return new ListFavoriteDto(
+            favorite.getId(),
+            favorite.getMemberId(),
+            favorite.getBookListId()
+        );
     }
 
-    private void varifyListFavorite(Long listFavoriteId, Long bookListId){
-        var bookListFavoriteId = favoriteRepository.findIdByBookListId(bookListId);
-        if(bookListFavoriteId != listFavoriteId){
-            throw new BusinessLogicException(ExceptionCode.FAVORITE_NOT_FOUND);
-        }
+    private ListFavorite getFavorite(Long listFavoriteId){
+        var favorite = favoriteRepository.findById(listFavoriteId)
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.FAVORITE_NOT_FOUND));
+
+        return favorite;
     }
 
     @Transactional(readOnly = true)
@@ -73,17 +79,6 @@ public class ListFavoriteService {
                 favorite.getBookListId()
             ))
             .collect(Collectors.toList());
-    }
-
-    private List<ListFavorite> getFavorites(List<Long> listFavoriteIds) {
-        return listFavoriteIds.stream()
-            .map(this::getFavorite)
-            .collect(Collectors.toList());
-    }
-
-    private ListFavorite getFavorite(Long listFavoriteId){
-        return favoriteRepository.findById(listFavoriteId)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.FAVORITE_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)

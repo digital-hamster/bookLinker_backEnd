@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/favorite")
+@RequestMapping("/favorites")
 @RequiredArgsConstructor
 class ListFavoriteController {
     private final ListFavoriteService service;
