@@ -34,6 +34,9 @@ public class BookList extends BaseTimeEntity{
     private String hashTag; //content2 느낌
 
     @Column
+    private Integer count;
+
+    @Column
     private LocalDateTime deletedAt;
 
     private Long memberId;
@@ -54,6 +57,7 @@ public class BookList extends BaseTimeEntity{
         this.hashTag = hashTag;
         this.backImg = backImg;
         this.memberId = memberId;
+        this.count = 0;
     }
 
     public void addBooks(List<Book> books) {
@@ -72,6 +76,10 @@ public class BookList extends BaseTimeEntity{
         this.content = list.content;
         this.hashTag = list.hashTag;
         this.backImg = list.backImg;
+    }
+
+    public void incrementCount(){
+        this.count++;
     }
 }
 
