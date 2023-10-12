@@ -163,8 +163,7 @@ public class BookListService {
 
     @Transactional(readOnly = true)
     public BookListDto getBookList(Long bookListId) {
-        var list = bookListRepository.findById(bookListId)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+        BookList list = findBookListById(bookListId);
 
         valifyList(list);
         var isWriter = isWriter(list, memberService);
@@ -199,8 +198,7 @@ public class BookListService {
     public Long remove(Long bookListId) {
         var member = memberService.findMember();
 
-        var list = bookListRepository.findById(bookListId)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+        BookList list = findBookListById(bookListId);
 
         valifyList(list);
 
@@ -217,8 +215,7 @@ public class BookListService {
                        Long bookListId) {
         var member = memberService.findMember();
 
-        var list = bookListRepository.findById(bookListId)
-            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+        BookList list = findBookListById(bookListId);
 
         valifyList(list);
 
@@ -298,9 +295,9 @@ public class BookListService {
         }
     }
 
-    private static void loginException(){
-        if(!SecurityUtil.hasToken()){
-            throw new BusinessLogicException(ExceptionCode.MEMBER_NEED_LOGIN);
-        }
+    public BookList findBookListById(Long bookListId) {
+        var list = bookListRepository.findById(bookListId)
+            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
+        return list;
     }
 }
