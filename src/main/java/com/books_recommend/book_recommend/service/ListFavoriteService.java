@@ -127,4 +127,9 @@ public class ListFavoriteService {
 
         return dtos;
     }
+
+//    public List<Long> getByListIdsDESCFavorite(int offset, int size) {
+//        List<Long> bookListIds = favoriteRepository.findBookListIdsByFavoriteDesc();
+//        return bookListIds;}
+
 }

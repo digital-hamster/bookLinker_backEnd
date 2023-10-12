@@ -295,10 +295,19 @@ class BookListController {
         Long bookListId
     ){}
 
-    @GetMapping("/recommends")
+    @GetMapping("/counts")
     ApiResponse<List<RecommendResponse>>getByCount(@RequestParam("offset") int offset,
                                                    @RequestParam("size") int size) {
-        var dtos = service.getBookListsByCount(offset, size);
+        var dtos = service.getByCount(offset, size);
+        var response = fromRecommend(dtos);
+
+        return ApiResponse.success(response);
+    }
+
+    @GetMapping("/favorites")
+    ApiResponse<List<RecommendResponse>>getByFavorite(@RequestParam("offset") int offset,
+                                                      @RequestParam("size") int size) {
+        var dtos = service.getByFavorite(offset, size);
         var response = fromRecommend(dtos);
 
         return ApiResponse.success(response);

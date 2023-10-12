@@ -26,6 +26,7 @@ BookListRepositoryCustom{
     @Query("SELECT b FROM BookList b WHERE b.id = (SELECT c.bookListId FROM Comment c WHERE c.id = :commentId)")
     BookList findBookListByCommentId(Long commentId);
 
+
     Optional<BookList> findById(Long bookListId);
 
     //@Query("SELECT b FROM BookList b WHERE b.deletedAt IS NULL ORDER BY b.count DESC") 조회수 0이거나 null 포함

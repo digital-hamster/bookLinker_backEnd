@@ -5,12 +5,14 @@ import com.books_recommend.book_recommend.common.exception.BusinessLogicExceptio
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
+import com.books_recommend.book_recommend.dto.ListFavoriteDto;
 import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.entity.BookList;
 import com.books_recommend.book_recommend.entity.Member;
 import com.books_recommend.book_recommend.repository.BookListRepository;
 import com.books_recommend.book_recommend.repository.BookListRepositoryCustom;
 import com.books_recommend.book_recommend.repository.BookRepository;
+import com.books_recommend.book_recommend.repository.ListFavoriteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -33,6 +35,7 @@ public class BookListService {
     private final BookListRepository bookListRepository;
     private final BookRepository bookRepository;
     private final MemberService memberService;
+    private final ListFavoriteRepository listFavoriteRepository;
 
     @Transactional
     public Long create(CreateRequirement requirement) {
@@ -307,22 +310,40 @@ public class BookListService {
     }
 
     //추천 알고리즘=============================================
-
-    public List<BookListDto> getBookListsByCount(int offset, int size){
+    public List<BookListDto> getByCount(int offset, int size){
         var lists = bookListRepository.findAllOrderByCountDesc();
+        var selectedLists = selectDataByOffsetAndSize(lists, offset, size);
 
+        var dtos = dtosWithRecommend(selectedLists);
+        return dtos;
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookListDto> getByFavorite(int offset, int size){
+        var bookListIds = listFavoriteRepository.findBookListIdsByFavoriteDesc();
+        var lists = getListByIds(bookListIds);
+        var selectedLists = selectDataByOffsetAndSize(lists, offset, size);
+
+        var dtos = dtosWithRecommend(selectedLists);
+        return dtos;
+    }
+
+    private List<BookList> getListByIds(List<Long> bookListIds){
+        return bookListIds.stream()
+            .map(bookListRepository::findActiveBookList)
+            .collect(Collectors.toList());
+    }
+
+    private List<BookList> selectDataByOffsetAndSize(List<BookList> lists, int offset, int size) {
         var totalSize = lists.size();
-        if (offset >= totalSize) {
-            return Collections.emptyList(); // Offset이 데이터 크기를 초과하면 빈 리스트 반환
+        if (offset >= totalSize) { // Offset이 데이터 크기를 초과하면 빈 리스트 반환
+            return Collections.emptyList();
         }
 
         // offset에서 시작하여 size만큼의 데이터를 선택
         int startIndex = offset;
         int endIndex = Math.min(offset + size, totalSize);
-        List<BookList> selectedLists = lists.subList(startIndex, endIndex);
-
-        var dtos = dtosWithRecommend(selectedLists);
-        return dtos;
+        return lists.subList(startIndex, endIndex);
     }
 
     private List<BookListDto> dtosWithRecommend(List<BookList> lists) {
