@@ -29,6 +29,8 @@ public class ListFavoriteService {
             member.getId(),
             bookListId
         );
+        isFavorted(member.getId(), bookListId, favoriteRepository);
+
         var savedFavorite = favoriteRepository.save(favorite);
 
         var response = new ListFavoriteDto(
@@ -40,12 +42,20 @@ public class ListFavoriteService {
         return response;
     }
 
+    private static void isFavorted(Long memberId, Long bookListId, ListFavoriteRepository repository){
+        var count = repository.countByMemberIdAndBookListId(memberId, bookListId);
+        if(count>0){
+            throw new BusinessLogicException(ExceptionCode.FAVORITE_EXISTED);
+        }
+    }
+
     @Transactional
     public ListFavoriteDto delete(Long bookListId,
                                   Long listFavoriteId) {
-        memberService.findMember();
+        var member = memberService.findMember();
         bookListService.findBookListById(bookListId);
         var favorite = getFavorite(listFavoriteId);
+        verifyFavorite(favorite, member.getId());
 
         favoriteRepository.delete(favorite);
 
@@ -54,6 +64,11 @@ public class ListFavoriteService {
             favorite.getMemberId(),
             favorite.getBookListId()
         );
+    }
+    private static void verifyFavorite(ListFavorite favorite, Long memberId){
+        if(favorite.getMemberId() != memberId){
+            throw new BusinessLogicException(ExceptionCode.FAVORITE_MEMBER_INCONSISTENCY);
+        }
     }
 
     private ListFavorite getFavorite(Long listFavoriteId) {
