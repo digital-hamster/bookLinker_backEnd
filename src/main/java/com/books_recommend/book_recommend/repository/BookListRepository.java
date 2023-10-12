@@ -27,4 +27,9 @@ BookListRepositoryCustom{
     BookList findBookListByCommentId(Long commentId);
 
     Optional<BookList> findById(Long bookListId);
+
+    //@Query("SELECT b FROM BookList b WHERE b.deletedAt IS NULL ORDER BY b.count DESC") 조회수 0이거나 null 포함
+
+    @Query("SELECT b FROM BookList b WHERE b.deletedAt IS NULL AND (b.count IS NOT NULL AND b.count > 0) ORDER BY b.count DESC")
+    List<BookList> findAllOrderByCountDesc();
 }

@@ -4,6 +4,7 @@ import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.service.BookListService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,11 +20,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.books_recommend.book_recommend.controller.BookListController.RecommendResponse.fromRecommend;
+
 @RestController
 @RequestMapping("/booklists")
 @RequiredArgsConstructor
 class BookListController {
     private final BookListService service;
+    private int offset;
+    private int size;
 
     @PostMapping
     ApiResponse<CreateResponse> createBookList(@RequestBody @Valid CreateRequest request) {
@@ -133,6 +138,7 @@ class BookListController {
         String content,
         String hashTag,
         String backImg,
+        Integer count,
         List<BookDto> books
     ) {
         private static Page<GetResponse> from(Page<BookListDto> listDtos) {
@@ -159,6 +165,7 @@ class BookListController {
                         listDto.content(),
                         listDto.hashTag(),
                         listDto.backImg(),
+                        listDto.count(),
                         bookDtos
                     );
                 })
@@ -283,13 +290,61 @@ class BookListController {
             @NotBlank(message = "책에 대한 추천사를 남겨주세요.")
             String recommendation
         ) {}
-
-
-
     }
-
     record UpdateResponse(
         Long bookListId
     ){}
 
+    @GetMapping("/recommends")
+    ApiResponse<List<RecommendResponse>>getByCount(@RequestParam("offset") int offset,
+                                                   @RequestParam("size") int size) {
+        var dtos = service.getBookListsByCount(offset, size);
+        var response = fromRecommend(dtos);
+
+        return ApiResponse.success(response);
+    }
+
+    record RecommendResponse(Long bookListId,
+                             Long memberId,
+                             Boolean isWriter,
+                             String title,
+                             String content,
+                             String hashTag,
+                             String backImg,
+                             Integer count,
+                             List<BookDto> books
+    ) {
+        static List<RecommendResponse> fromRecommend(List<BookListDto> listDtos) {
+            List<RecommendResponse> recommendResponses = listDtos.stream()
+                .map(listDto -> {
+                    List<BookDto> bookDtos = listDto.books().stream()
+                        .map(book -> new BookDto(
+                            book.id(),
+                            book.title(),
+                            book.authors(),
+                            book.isbn(),
+                            book.publisher(),
+                            book.image(),
+                            book.url(),
+                            book.recommendation()
+                        ))
+                        .collect(Collectors.toList());
+
+                    return new RecommendResponse(
+                        listDto.bookListId(),
+                        listDto.memberId(),
+                        listDto.isWriter(),
+                        listDto.title(),
+                        listDto.content(),
+                        listDto.hashTag(),
+                        listDto.backImg(),
+                        listDto.count(),
+                        bookDtos
+                    );
+                })
+                .collect(Collectors.toList());
+
+            return recommendResponses;
+            }
+        }
 }
