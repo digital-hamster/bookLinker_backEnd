@@ -45,34 +45,30 @@ class ListFavoriteController {
     ){}
 
     @GetMapping("/{bookListId}")
-    public ApiResponse<List<GetResponse>> getByBookList(@PathVariable Long bookListId){
+    public ApiResponse<List<GetWriterResponse>> getByBookList(@PathVariable Long bookListId){
         var dtos = service.getByBookList(bookListId);
-        var response = from(dtos);
+        var response = fromWriter(dtos);
 
         return ApiResponse.success(response);
     }
 
-    @GetMapping
-    public ApiResponse<List<GetResponse>> getByMember(){
-        var dtos = service.getByMember();
-        var response = from(dtos);
-
-        return ApiResponse.success(response);
-    }
-
-    private List<GetResponse> from(List<ListFavoriteDto> dtos) {
+    private List<GetWriterResponse> fromWriter(List<ListFavoriteDto.GetListFavoriteDto> dtos) {
         return dtos.stream().map(dto ->
-                new GetResponse(
+                new GetWriterResponse(
                     dto.id(),
                     dto.memberId(),
+                    dto.isFavorite(),
                     dto.bookListId()
                 ))
             .collect(Collectors.toList());
     }
 
-    record GetResponse(
+    record GetWriterResponse(
         Long id,
         Long memberId,
+        Boolean isFavorite,
         Long bookListId
     ){}
+
+
 }

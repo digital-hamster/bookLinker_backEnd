@@ -4,4 +4,12 @@ public record ListFavoriteDto(
     Long id,
     Long memberId,
     Long bookListId
-){}
+){
+    public record GetListFavoriteDto(
+        Long id,
+        Long memberId,
+
+        Boolean isFavorite,
+        Long bookListId
+    ){}
+}

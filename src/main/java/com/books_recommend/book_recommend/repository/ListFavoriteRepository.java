@@ -5,15 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ListFavoriteRepository extends JpaRepository<ListFavorite, Long> {
-    @Query("SELECT lf FROM ListFavorite lf WHERE lf.bookListId = :bookListId")
-    Optional<ListFavorite> findFavoriteByBookListId(Long bookListId);
-
-    @Query("SELECT lf FROM ListFavorite lf WHERE lf.bookListId = :bookListId")
+    @Query("SELECT lf FROM ListFavorite lf WHERE lf.bookListId = :bookListId ORDER BY lf.createdAt DESC")
     List<ListFavorite> findByBookListId(Long bookListId);
 
-    @Query("SELECT lf FROM ListFavorite lf WHERE lf.memberId = :memberId")
+    @Query("SELECT lf FROM ListFavorite lf WHERE lf.memberId = :memberId ORDER BY lf.createdAt DESC")
     List<ListFavorite> findByMemberId(Long memberId);
 }

@@ -1,5 +1,6 @@
 package com.books_recommend.book_recommend.service;
 
+import com.books_recommend.book_recommend.auth.util.SecurityUtil;
 import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
 import com.books_recommend.book_recommend.dto.ListFavoriteDto;
@@ -20,7 +21,7 @@ public class ListFavoriteService {
     private final BookListService bookListService;
 
     @Transactional
-    public ListFavoriteDto create(Long bookListId){
+    public ListFavoriteDto create(Long bookListId) {
         var member = memberService.findMember();
         bookListService.findBookListById(bookListId);
 
@@ -40,7 +41,8 @@ public class ListFavoriteService {
     }
 
     @Transactional
-    public ListFavoriteDto delete(Long bookListId, Long listFavoriteId){
+    public ListFavoriteDto delete(Long bookListId,
+                                  Long listFavoriteId) {
         memberService.findMember();
         bookListService.findBookListById(bookListId);
         var favorite = getFavorite(listFavoriteId);
@@ -54,7 +56,8 @@ public class ListFavoriteService {
         );
     }
 
-    private ListFavorite getFavorite(Long listFavoriteId){
+    private ListFavorite getFavorite(Long listFavoriteId) {
+        SecurityUtil.hasToken();
         var favorite = favoriteRepository.findById(listFavoriteId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.FAVORITE_NOT_FOUND));
 
@@ -62,31 +65,50 @@ public class ListFavoriteService {
     }
 
     @Transactional(readOnly = true)
-    public List<ListFavoriteDto> getByBookList(Long bookListId){
+    public List<ListFavoriteDto.GetListFavoriteDto> getByBookList(Long bookListId) {
         bookListService.findBookListById(bookListId);
 
         var favorites = favoriteRepository.findByBookListId(bookListId);
-        var dtos = from(favorites);
+        var dtos = dtosWithWriter(favorites);
 
         return dtos;
     }
 
-    private List<ListFavoriteDto> from(List<ListFavorite> favorites) {
+    private List<ListFavoriteDto.GetListFavoriteDto> dtosWithWriter(List<ListFavorite> favorites) {
         return favorites.stream()
+            .map(favorite -> {
+                Boolean isFavorite = isWriter(favorite, memberService);
+                return new ListFavoriteDto.GetListFavoriteDto(
+                    favorite.getId(),
+                    favorite.getMemberId(),
+                    isFavorite,
+                    favorite.getBookListId()
+                );
+            })
+            .collect(Collectors.toList());
+    }
+
+    private static Boolean isWriter(ListFavorite favorite,
+                                    MemberService memberService) {
+        if (SecurityUtil.hasToken() &&
+            memberService.findMember().getId() == favorite.getMemberId()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ListFavoriteDto> getByMember() {
+        var member = memberService.findMember();
+        var favorites = favoriteRepository.findByMemberId(member.getId());
+
+        var dtos = favorites.stream()
             .map(favorite -> new ListFavoriteDto(
                 favorite.getId(),
                 favorite.getMemberId(),
                 favorite.getBookListId()
             ))
             .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<ListFavoriteDto> getByMember(){
-        var member = memberService.findMember();
-        var favorites = favoriteRepository.findByMemberId(member.getId());
-
-        var dtos = from(favorites);
 
         return dtos;
     }
