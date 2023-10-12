@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -303,5 +304,47 @@ public class BookListService {
         var list = bookListRepository.findById(bookListId)
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
         return list;
+    }
+
+    //추천 알고리즘=============================================
+
+    public List<BookListDto> getBookListsByCount(int offset, int size){
+        var lists = bookListRepository.findAllOrderByCountDesc();
+
+        var totalSize = lists.size();
+        if (offset >= totalSize) {
+            return Collections.emptyList(); // Offset이 데이터 크기를 초과하면 빈 리스트 반환
+        }
+
+        // offset에서 시작하여 size만큼의 데이터를 선택
+        int startIndex = offset;
+        int endIndex = Math.min(offset + size, totalSize);
+        List<BookList> selectedLists = lists.subList(startIndex, endIndex);
+
+        var dtos = dtosWithRecommend(selectedLists);
+        return dtos;
+    }
+
+    private List<BookListDto> dtosWithRecommend(List<BookList> lists) {
+        var dtosWithRecommend = lists.stream()
+            .map(list -> {
+                var isWriter = isWriter(list, memberService);
+                var bookDtos = list.getBooks().stream()
+                    .map(this::toBookDto)
+                    .collect(Collectors.toList());
+                return new BookListDto(
+                    bookDtos,
+                    list.getId(),
+                    isWriter,
+                    list.getMemberId(),
+                    list.getTitle(),
+                    list.getContent(),
+                    list.getHashTag(),
+                    list.getBackImg(),
+                    list.getCount()
+                );
+            })
+            .toList();
+        return dtosWithRecommend;
     }
 }

@@ -16,7 +16,7 @@ class ListFavoriteController {
     private final ListFavoriteService service;
 
     @PostMapping("/{bookListId}")
-    public ApiResponse<PostResponse> create(@PathVariable Long bookListId){
+    ApiResponse<PostResponse> create(@PathVariable Long bookListId){
         var dto = service.create(bookListId);
         var response = new PostResponse(
             dto.id()
@@ -30,7 +30,7 @@ class ListFavoriteController {
     ){}
 
     @DeleteMapping("/{bookListId}/{favoriteId}")
-    public ApiResponse<DeleteResponse> delete(@PathVariable Long bookListId,
+    ApiResponse<DeleteResponse> delete(@PathVariable Long bookListId,
                                               @PathVariable Long favoriteId){
         var dto = service.delete(bookListId, favoriteId);
         var response = new DeleteResponse(
@@ -45,7 +45,7 @@ class ListFavoriteController {
     ){}
 
     @GetMapping("/{bookListId}")
-    public ApiResponse<List<GetWriterResponse>> getByBookList(@PathVariable Long bookListId){
+    ApiResponse<List<GetWriterResponse>> getByBookList(@PathVariable Long bookListId){
         var dtos = service.getByBookList(bookListId);
         var response = fromWriter(dtos);
 
@@ -69,6 +69,4 @@ class ListFavoriteController {
         Boolean isFavorite,
         Long bookListId
     ){}
-
-
 }
