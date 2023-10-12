@@ -136,7 +136,8 @@ public class BookListService {
                     list.getTitle(),
                     list.getContent(),
                     list.getHashTag(),
-                    list.getBackImg()
+                    list.getBackImg(),
+                    list.getCount()
                 );
             })
             .toList();
@@ -161,11 +162,13 @@ public class BookListService {
         );
     }
 
-    @Transactional(readOnly = true)
+    @Transactional //(readOnly = true) 조회수가 들어가기 때문에 읽기 전용은 뺀다
     public BookListDto getBookList(Long bookListId) {
         BookList list = findBookListById(bookListId);
-
         valifyList(list);
+        list.incrementCount();
+        bookListRepository.save(list);
+
         var isWriter = isWriter(list, memberService);
         var books = fromEntity(list);
 
@@ -177,7 +180,8 @@ public class BookListService {
             list.getTitle(),
             list.getContent(),
             list.getHashTag(),
-            list.getBackImg());
+            list.getBackImg(),
+            list.getCount());
     }
 
     private static Boolean isWriter(BookList list, MemberService memberService) {

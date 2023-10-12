@@ -187,6 +187,7 @@ class BookListController {
             listDto.content(),
             listDto.hashTag(),
             listDto.backImg(),
+            listDto.count(),
             listDto.books());
 
         return ApiResponse.success(response);
@@ -200,6 +201,7 @@ class BookListController {
         String content,
         String hashTag,
         String backImg,
+        Integer count,
         List<BookDto> books
     ){}
 
