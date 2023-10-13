@@ -9,4 +9,10 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.bookListId = :bookListId ORDER BY c.createdAt DESC")
     List<Comment> findAllByBookListId(Long bookListId);
+
+    @Query("SELECT c.bookListId FROM Comment c GROUP BY c.bookListId ORDER BY COUNT(c.bookListId) DESC")
+    List<Long> findBookListIdsByCommentDesc();
+
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.bookListId = :bookListId")
+    Long countCommentByBookListId(Long bookListId);
 }

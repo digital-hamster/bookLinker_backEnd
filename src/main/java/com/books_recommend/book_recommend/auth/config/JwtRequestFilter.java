@@ -46,7 +46,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 "/books",
                 "/favorites",
                 "/booklists/counts",
-                "/booklists/favorites"
+                "/booklists/favorites",
+                "/booklists/comments"
             ));
 
 

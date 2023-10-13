@@ -8,10 +8,7 @@ import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.entity.BookList;
 import com.books_recommend.book_recommend.entity.Member;
-import com.books_recommend.book_recommend.repository.BookListRepository;
-import com.books_recommend.book_recommend.repository.BookListRepositoryCustom;
-import com.books_recommend.book_recommend.repository.BookRepository;
-import com.books_recommend.book_recommend.repository.ListFavoriteRepository;
+import com.books_recommend.book_recommend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -32,6 +29,8 @@ public class BookListService {
     private final BookRepository bookRepository;
     private final MemberService memberService;
     private final ListFavoriteRepository listFavoriteRepository;
+
+    private final CommentRepository commentRepository;
 
     @Transactional
     public Long create(CreateRequirement requirement) {
@@ -126,6 +125,7 @@ public class BookListService {
             .map(list -> {
                 var isWriter = isWriter(list, memberService);
                 var favorite = countFavoriteByBookListId(list.getId());
+                var comments = countCommentByBookListId(list.getId());
                 var bookDtos = list.getBooks().stream()
                     .map(this::toBookDto) // BookDto로 변환
                     .collect(Collectors.toList());
@@ -139,7 +139,8 @@ public class BookListService {
                     list.getHashTag(),
                     list.getBackImg(),
                     list.getCount(),
-                    favorite
+                    favorite,
+                    comments
                 );
             })
             .toList();
@@ -173,6 +174,7 @@ public class BookListService {
 
         var isWriter = isWriter(list, memberService);
         var favorite = countFavoriteByBookListId(list.getId());
+        var comments = countCommentByBookListId(list.getId());
         var books = fromEntity(list);
 
         return new BookListDto(
@@ -185,7 +187,8 @@ public class BookListService {
             list.getHashTag(),
             list.getBackImg(),
             list.getCount(),
-            favorite
+            favorite,
+            comments
             );
     }
 
@@ -329,6 +332,21 @@ public class BookListService {
         return dtos;
     }
 
+    @Transactional(readOnly = true)
+    public List<BookListDto> getByComment(int offset, int size){
+        var bookListIds = commentRepository.findBookListIdsByCommentDesc();
+        var lists = getListByIds(bookListIds);
+        var selectedLists = selectDataByOffsetAndSize(lists, offset, size);
+
+        var dtos = dtosWithRecommend(selectedLists);
+        return dtos;
+    }
+
+
+    private Long countCommentByBookListId(Long bookListId){
+        return commentRepository.countCommentByBookListId(bookListId);
+    }
+
     private Long countFavoriteByBookListId(Long bookListId){
         return listFavoriteRepository.countFavoriteByBookListId(bookListId);
     }
@@ -359,6 +377,7 @@ public class BookListService {
             .map(list -> {
                 var isWriter = isWriter(list, memberService);
                 var favorite = countFavoriteByBookListId(list.getId());
+                var comments = countCommentByBookListId(list.getId());
                 var bookDtos = list.getBooks().stream()
                     .map(this::toBookDto)
                     .collect(Collectors.toList());
@@ -372,7 +391,8 @@ public class BookListService {
                     list.getHashTag(),
                     list.getBackImg(),
                     list.getCount(),
-                    favorite
+                    favorite,
+                    comments
                 );
             })
             .toList();

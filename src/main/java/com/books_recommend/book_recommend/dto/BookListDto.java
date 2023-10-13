@@ -21,7 +21,9 @@ public record BookListDto(
 
     Integer count,
 
-    Long favorite
+    Long favorite,
+
+    Long comments
 ) {
     public BookListDto(
         List<BookDto> books,
@@ -32,8 +34,9 @@ public record BookListDto(
         String hashTag,
         String backImg,
         Integer count,
-        Long favorite
+        Long favorite,
+        Long comments
     ) {
-        this(books, bookListId, false, memberId, title, content, hashTag, backImg, count, favorite);
+        this(books, bookListId, false, memberId, title, content, hashTag, backImg, count, favorite, comments);
     }
 }

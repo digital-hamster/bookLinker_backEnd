@@ -137,6 +137,7 @@ class BookListController {
         String backImg,
         Integer count,
         Long favorite,
+        Long comments,
         List<BookDto> books
     ) {
         private static Page<GetResponse> from(Page<BookListDto> listDtos) {
@@ -165,6 +166,7 @@ class BookListController {
                         listDto.backImg(),
                         listDto.count(),
                         listDto.favorite(),
+                        listDto.comments(),
                         bookDtos
                     );
                 })
@@ -195,6 +197,7 @@ class BookListController {
             listDto.backImg(),
             listDto.count(),
             listDto.favorite(),
+            listDto.comments(),
             listDto.books());
 
         return ApiResponse.success(response);
@@ -210,6 +213,7 @@ class BookListController {
         String backImg,
         Integer count,
         Long favorite,
+        Long comments,
         List<BookDto> books
     ){}
 
@@ -314,6 +318,16 @@ class BookListController {
         return ApiResponse.success(response);
     }
 
+    @GetMapping("/comments")
+    ApiResponse<List<RecommendResponse>>getByComment(@RequestParam("offset") int offset,
+                                                     @RequestParam("size") int size) {
+        var dtos = service.getByComment(offset, size);
+        var response = fromRecommend(dtos);
+
+        return ApiResponse.success(response);
+    }
+
+
     record RecommendResponse(Long bookListId,
                              Long memberId,
                              Boolean isWriter,
@@ -323,6 +337,7 @@ class BookListController {
                              String backImg,
                              Integer count,
                              Long favorite,
+                             Long comments,
                              List<BookDto> books
     ) {
         static List<RecommendResponse> fromRecommend(List<BookListDto> listDtos) {
@@ -351,6 +366,7 @@ class BookListController {
                         listDto.backImg(),
                         listDto.count(),
                         listDto.favorite(),
+                        listDto.comments(),
                         bookDtos
                     );
                 })
