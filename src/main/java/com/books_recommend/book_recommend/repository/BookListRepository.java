@@ -21,14 +21,15 @@ BookListRepositoryCustom{
     @Query("select b from BookList b where b.deletedAt is null ORDER BY b.id DESC")
     BookList findActiveBookList(Long bookListId);
 
+    @Query("select b from BookList b where b.deletedAt is null and b.id = :bookListId")
+    List<BookList> findActiveBookLists(Long bookListId);
+
     Page<BookList> searchTitle(SearchCondition searchCondition, Pageable pageable);
 
     @Query("SELECT b FROM BookList b WHERE b.id = (SELECT c.bookListId FROM Comment c WHERE c.id = :commentId)")
     BookList findBookListByCommentId(Long commentId);
 
     Optional<BookList> findById(Long bookListId);
-
-    //@Query("SELECT b FROM BookList b WHERE b.deletedAt IS NULL ORDER BY b.count DESC") 조회수 0이거나 null 포함
 
     @Query("SELECT b FROM BookList b WHERE b.deletedAt IS NULL AND (b.count IS NOT NULL AND b.count > 0) ORDER BY b.count DESC")
     List<BookList> findAllOrderByCountDesc();

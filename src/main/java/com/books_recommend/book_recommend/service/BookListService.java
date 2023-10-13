@@ -11,6 +11,7 @@ import com.books_recommend.book_recommend.entity.Member;
 import com.books_recommend.book_recommend.repository.BookListRepository;
 import com.books_recommend.book_recommend.repository.BookListRepositoryCustom;
 import com.books_recommend.book_recommend.repository.BookRepository;
+import com.books_recommend.book_recommend.repository.ListFavoriteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,10 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,6 +31,7 @@ public class BookListService {
     private final BookListRepository bookListRepository;
     private final BookRepository bookRepository;
     private final MemberService memberService;
+    private final ListFavoriteRepository listFavoriteRepository;
 
     @Transactional
     public Long create(CreateRequirement requirement) {
@@ -126,6 +125,7 @@ public class BookListService {
         var dtosWithWriter = lists.stream()
             .map(list -> {
                 var isWriter = isWriter(list, memberService);
+                var favorite = countFavoriteByBookListId(list.getId());
                 var bookDtos = list.getBooks().stream()
                     .map(this::toBookDto) // BookDto로 변환
                     .collect(Collectors.toList());
@@ -138,7 +138,8 @@ public class BookListService {
                     list.getContent(),
                     list.getHashTag(),
                     list.getBackImg(),
-                    list.getCount()
+                    list.getCount(),
+                    favorite
                 );
             })
             .toList();
@@ -171,6 +172,7 @@ public class BookListService {
         bookListRepository.save(list);
 
         var isWriter = isWriter(list, memberService);
+        var favorite = countFavoriteByBookListId(list.getId());
         var books = fromEntity(list);
 
         return new BookListDto(
@@ -182,7 +184,9 @@ public class BookListService {
             list.getContent(),
             list.getHashTag(),
             list.getBackImg(),
-            list.getCount());
+            list.getCount(),
+            favorite
+            );
     }
 
     private static Boolean isWriter(BookList list, MemberService memberService) {
@@ -307,28 +311,54 @@ public class BookListService {
     }
 
     //추천 알고리즘=============================================
-
-    public List<BookListDto> getBookListsByCount(int offset, int size){
+    public List<BookListDto> getByCount(int offset, int size){
         var lists = bookListRepository.findAllOrderByCountDesc();
+        var selectedLists = selectDataByOffsetAndSize(lists, offset, size);
 
+        var dtos = dtosWithRecommend(selectedLists);
+        return dtos;
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookListDto> getByFavorite(int offset, int size){
+        var bookListIds = listFavoriteRepository.findBookListIdsByFavoriteDesc();
+        var lists = getListByIds(bookListIds);
+        var selectedLists = selectDataByOffsetAndSize(lists, offset, size);
+
+        var dtos = dtosWithRecommend(selectedLists);
+        return dtos;
+    }
+
+    private Long countFavoriteByBookListId(Long bookListId){
+        return listFavoriteRepository.countFavoriteByBookListId(bookListId);
+    }
+
+    private List<BookList> getListByIds(List<Long> bookListIds) {
+        List<BookList> result = new ArrayList<>();
+        for (Long bookListId : bookListIds) {
+            List<BookList> bookLists = bookListRepository.findActiveBookLists(bookListId);
+            result.addAll(bookLists);
+        }
+        return result;
+    }
+
+    private List<BookList> selectDataByOffsetAndSize(List<BookList> lists, int offset, int size) {
         var totalSize = lists.size();
-        if (offset >= totalSize) {
-            return Collections.emptyList(); // Offset이 데이터 크기를 초과하면 빈 리스트 반환
+        if (offset >= totalSize) { // Offset이 데이터 크기를 초과하면 빈 리스트 반환
+            return Collections.emptyList();
         }
 
         // offset에서 시작하여 size만큼의 데이터를 선택
         int startIndex = offset;
         int endIndex = Math.min(offset + size, totalSize);
-        List<BookList> selectedLists = lists.subList(startIndex, endIndex);
-
-        var dtos = dtosWithRecommend(selectedLists);
-        return dtos;
+        return lists.subList(startIndex, endIndex);
     }
 
     private List<BookListDto> dtosWithRecommend(List<BookList> lists) {
         var dtosWithRecommend = lists.stream()
             .map(list -> {
                 var isWriter = isWriter(list, memberService);
+                var favorite = countFavoriteByBookListId(list.getId());
                 var bookDtos = list.getBooks().stream()
                     .map(this::toBookDto)
                     .collect(Collectors.toList());
@@ -341,7 +371,8 @@ public class BookListService {
                     list.getContent(),
                     list.getHashTag(),
                     list.getBackImg(),
-                    list.getCount()
+                    list.getCount(),
+                    favorite
                 );
             })
             .toList();
