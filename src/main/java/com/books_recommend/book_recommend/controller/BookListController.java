@@ -4,7 +4,6 @@ import com.books_recommend.book_recommend.common.web.ApiResponse;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.service.BookListService;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -27,8 +26,6 @@ import static com.books_recommend.book_recommend.controller.BookListController.R
 @RequiredArgsConstructor
 class BookListController {
     private final BookListService service;
-    private int offset;
-    private int size;
 
     @PostMapping
     ApiResponse<CreateResponse> createBookList(@RequestBody @Valid CreateRequest request) {
@@ -139,6 +136,7 @@ class BookListController {
         String hashTag,
         String backImg,
         Integer count,
+        Long favorite,
         List<BookDto> books
     ) {
         private static Page<GetResponse> from(Page<BookListDto> listDtos) {
@@ -166,6 +164,7 @@ class BookListController {
                         listDto.hashTag(),
                         listDto.backImg(),
                         listDto.count(),
+                        listDto.favorite(),
                         bookDtos
                     );
                 })
@@ -195,6 +194,7 @@ class BookListController {
             listDto.hashTag(),
             listDto.backImg(),
             listDto.count(),
+            listDto.favorite(),
             listDto.books());
 
         return ApiResponse.success(response);
@@ -209,6 +209,7 @@ class BookListController {
         String hashTag,
         String backImg,
         Integer count,
+        Long favorite,
         List<BookDto> books
     ){}
 
@@ -321,6 +322,7 @@ class BookListController {
                              String hashTag,
                              String backImg,
                              Integer count,
+                             Long favorite,
                              List<BookDto> books
     ) {
         static List<RecommendResponse> fromRecommend(List<BookListDto> listDtos) {
@@ -348,6 +350,7 @@ class BookListController {
                         listDto.hashTag(),
                         listDto.backImg(),
                         listDto.count(),
+                        listDto.favorite(),
                         bookDtos
                     );
                 })

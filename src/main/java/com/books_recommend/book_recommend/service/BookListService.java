@@ -5,7 +5,6 @@ import com.books_recommend.book_recommend.common.exception.BusinessLogicExceptio
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
-import com.books_recommend.book_recommend.dto.ListFavoriteDto;
 import com.books_recommend.book_recommend.entity.Book;
 import com.books_recommend.book_recommend.entity.BookList;
 import com.books_recommend.book_recommend.entity.Member;
@@ -20,10 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -129,6 +125,7 @@ public class BookListService {
         var dtosWithWriter = lists.stream()
             .map(list -> {
                 var isWriter = isWriter(list, memberService);
+                var favorite = countFavoriteByBookListId(list.getId());
                 var bookDtos = list.getBooks().stream()
                     .map(this::toBookDto) // BookDto로 변환
                     .collect(Collectors.toList());
@@ -141,7 +138,8 @@ public class BookListService {
                     list.getContent(),
                     list.getHashTag(),
                     list.getBackImg(),
-                    list.getCount()
+                    list.getCount(),
+                    favorite
                 );
             })
             .toList();
@@ -174,6 +172,7 @@ public class BookListService {
         bookListRepository.save(list);
 
         var isWriter = isWriter(list, memberService);
+        var favorite = countFavoriteByBookListId(list.getId());
         var books = fromEntity(list);
 
         return new BookListDto(
@@ -185,7 +184,9 @@ public class BookListService {
             list.getContent(),
             list.getHashTag(),
             list.getBackImg(),
-            list.getCount());
+            list.getCount(),
+            favorite
+            );
     }
 
     private static Boolean isWriter(BookList list, MemberService memberService) {
@@ -328,10 +329,17 @@ public class BookListService {
         return dtos;
     }
 
-    private List<BookList> getListByIds(List<Long> bookListIds){
-        return bookListIds.stream()
-            .map(bookListRepository::findActiveBookList)
-            .collect(Collectors.toList());
+    private Long countFavoriteByBookListId(Long bookListId){
+        return listFavoriteRepository.countFavoriteByBookListId(bookListId);
+    }
+
+    private List<BookList> getListByIds(List<Long> bookListIds) {
+        List<BookList> result = new ArrayList<>();
+        for (Long bookListId : bookListIds) {
+            List<BookList> bookLists = bookListRepository.findActiveBookLists(bookListId);
+            result.addAll(bookLists);
+        }
+        return result;
     }
 
     private List<BookList> selectDataByOffsetAndSize(List<BookList> lists, int offset, int size) {
@@ -350,6 +358,7 @@ public class BookListService {
         var dtosWithRecommend = lists.stream()
             .map(list -> {
                 var isWriter = isWriter(list, memberService);
+                var favorite = countFavoriteByBookListId(list.getId());
                 var bookDtos = list.getBooks().stream()
                     .map(this::toBookDto)
                     .collect(Collectors.toList());
@@ -362,7 +371,8 @@ public class BookListService {
                     list.getContent(),
                     list.getHashTag(),
                     list.getBackImg(),
-                    list.getCount()
+                    list.getCount(),
+                    favorite
                 );
             })
             .toList();

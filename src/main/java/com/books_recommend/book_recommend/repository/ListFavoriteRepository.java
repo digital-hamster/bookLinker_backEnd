@@ -20,6 +20,10 @@ public interface ListFavoriteRepository extends JpaRepository<ListFavorite, Long
     boolean existsByBookListId(Long bookListId);
 
     //좋아요 순이 제일 많은 bookListId 순서로 반환
-    @Query("SELECT f.bookListId FROM ListFavorite f GROUP BY f.bookListId ORDER BY COUNT(f) DESC")
+    @Query("SELECT f.bookListId FROM ListFavorite f GROUP BY f.bookListId ORDER BY COUNT(f.bookListId) DESC")
     List<Long> findBookListIdsByFavoriteDesc();
+
+    //좋아요 개수
+    @Query("SELECT COUNT(f) FROM ListFavorite f WHERE f.bookListId = :bookListId")
+    Long countFavoriteByBookListId(Long bookListId);
 }
