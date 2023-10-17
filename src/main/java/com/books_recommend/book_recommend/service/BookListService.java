@@ -3,6 +3,8 @@ package com.books_recommend.book_recommend.service;
 import com.books_recommend.book_recommend.auth.util.SecurityUtil;
 import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
+import com.books_recommend.book_recommend.common.support.S3Constants;
+import com.books_recommend.book_recommend.common.util.S3Uploader;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
 import com.books_recommend.book_recommend.entity.Book;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,13 +32,17 @@ public class BookListService {
     private final BookRepository bookRepository;
     private final MemberService memberService;
     private final ListFavoriteRepository listFavoriteRepository;
-
     private final CommentRepository commentRepository;
+
+    private final S3Uploader s3Uploader;
 
     @Transactional
     public Long create(CreateRequirement requirement) {
         var member = memberService.findMember();
-        var bookList = createBookList(requirement, member);
+
+        var imgUrl = convert(requirement.backImg, s3Uploader);
+        var bookList = createBookList(requirement, member, imgUrl);
+
         var books = createBooks(requirement, bookList);
 
         bookList.addBooks(books);
@@ -45,6 +52,12 @@ public class BookListService {
         bookRepository.saveAll(books); //자동적으로 books 저장이 안됨
 
         return savedBookList.getId();
+    }
+
+    private static String convert(MultipartFile backImg, S3Uploader s3Uploader){
+        return s3Uploader.getS3(
+            S3Constants.BUCKET_NAME.getSeriesConstant(),
+            S3Constants.FILE_DiRECTORY.getSeriesConstant());
     }
 
     private void addMapping(List<Book> books,
@@ -72,12 +85,14 @@ public class BookListService {
             .toList();
     }
 
-    private static BookList createBookList(CreateRequirement requirement, Member member) {
+    private static BookList createBookList(CreateRequirement requirement,
+                                           Member member,
+                                           String backImg) {
         return new BookList(
             requirement.title,
             requirement.content,
             requirement.hashTag,
-            requirement.backImg,
+            backImg,
             member.getId()
         );
     }
@@ -86,7 +101,7 @@ public class BookListService {
         String title,
         String content,
         String hashTag,
-        String backImg,
+        MultipartFile backImg,
         List<BookRequirement> booksRequest
     ) {
         public record BookRequirement(

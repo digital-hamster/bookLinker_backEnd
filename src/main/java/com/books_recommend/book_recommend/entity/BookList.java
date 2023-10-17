@@ -81,5 +81,9 @@ public class BookList extends BaseTimeEntity{
     public void incrementCount(){
         this.count++;
     }
+
+    public void setImg(String backImg){
+        this.backImg = backImg;
+    }
 }
 

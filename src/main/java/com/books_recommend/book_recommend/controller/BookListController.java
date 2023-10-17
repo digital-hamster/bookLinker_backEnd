@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +45,7 @@ class BookListController {
 
         String hashTag, //hashTag 선택
 
-        String backImg, //backImg 선택
+        MultipartFile backImg, //backImg 선택
 
         @NotEmpty(message = "책 정보를 입력해 주세요.")
         List<BookRequest> books

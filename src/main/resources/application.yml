@@ -14,6 +14,8 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 
+
+
 #aws
 #  datasource:
 #    driver-class-name: com.mysql.cj.jdbc.Driver
@@ -56,8 +58,8 @@ kakao:
 cloud:
   aws:
     credentials:
-      accessKey: ${S3_PUBLIC_KEY}
-      secretKey: ${S3_SECRET_KEY}
+      accessKey:
+      secretKey:
     s3:
       bucket: book-linker-bucket
     stack:
