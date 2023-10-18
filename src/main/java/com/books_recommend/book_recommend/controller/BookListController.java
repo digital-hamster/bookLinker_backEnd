@@ -28,9 +28,11 @@ import static com.books_recommend.book_recommend.controller.BookListController.R
 class BookListController {
     private final BookListService service;
 
+    //https://emoney96.tistory.com/258
     @PostMapping
-    ApiResponse<CreateResponse> createBookList(@RequestBody @Valid CreateRequest request) {
-        var bookListId = service.create(request.toCreateRequirement());
+    ApiResponse<CreateResponse> createBookList(@RequestPart @Valid CreateRequest request,
+                                               @RequestPart MultipartFile backImg) {
+        var bookListId = service.create(request.toCreateRequirement(backImg));
 
         var response = new CreateResponse(bookListId);
         return ApiResponse.success(response);
@@ -45,12 +47,12 @@ class BookListController {
 
         String hashTag, //hashTag 선택
 
-        MultipartFile backImg, //backImg 선택
+//        MultipartFile backImg, //backImg 선택
 
         @NotEmpty(message = "책 정보를 입력해 주세요.")
         List<BookRequest> books
     ) {
-        private BookListService.CreateRequirement toCreateRequirement() {
+        private BookListService.CreateRequirement toCreateRequirement(MultipartFile backImg) {
             var booksRequirements = books.stream()
                 .map(books -> new BookListService.CreateRequirement.BookRequirement(
                     books.title,
