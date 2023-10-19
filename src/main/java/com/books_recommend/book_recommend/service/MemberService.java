@@ -61,4 +61,8 @@ public class MemberService {
     public record PutRequirement(
         String nickname
     ){}
+
+    public String getNicknameById(Long memberId){
+        return repository.findNicknameById(memberId);
+    }
 }
