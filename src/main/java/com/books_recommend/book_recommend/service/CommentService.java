@@ -61,6 +61,7 @@ public class CommentService {
                 return new CommentDto(
                     comment.getId(),
                     comment.getMemberId(),
+                    getNickname(comment.getMemberId()),
                     comment.getBookListId(),
                     isWriter,
                     comment.getContent(),
@@ -70,6 +71,9 @@ public class CommentService {
             .toList();
 
         return dtos;
+    }
+    private String getNickname(Long memberId){
+        return memberService.getNicknameById(memberId);
     }
 
     private static Boolean isWriter(Comment comment, MemberService memberService){

@@ -23,7 +23,7 @@ public class Member extends BaseTimeEntity {
     @Column
     private String email;
 
-    @Column
+    @Column(name = "nick_name")
     private String nickName;
 
     @Column

@@ -48,6 +48,7 @@ class CommentController {
                 .map(dto -> new GetResponse(
                     dto.commentId(),
                     dto.memberId(),
+                    dto.nickname(),
                     dto.isCommentWriter(),
                     dto.bookListId(),
                     dto.content(),
@@ -61,6 +62,7 @@ class CommentController {
     record GetResponse(
         Long commentId,
         Long memberId,
+        String nickname,
         Boolean isCommentWriter,
         Long bookListId,
         String content,
