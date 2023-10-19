@@ -3,7 +3,6 @@ package com.books_recommend.book_recommend.service;
 import com.books_recommend.book_recommend.auth.util.SecurityUtil;
 import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
-import com.books_recommend.book_recommend.common.support.S3Constants;
 import com.books_recommend.book_recommend.common.util.S3Uploader;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
@@ -19,9 +18,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static com.books_recommend.book_recommend.common.exception.ExceptionCode.IMAGE_NULL;
 
 //3. 특정 BookList 검색하기 (title)
 
@@ -39,10 +41,8 @@ public class BookListService {
     @Transactional
     public Long create(CreateRequirement requirement) {
         var member = memberService.findMember();
-
-        var imgUrl = convert(requirement.backImg, s3Uploader);
+        var imgUrl = upload(requirement.backImg);
         var bookList = createBookList(requirement, member, imgUrl);
-
         var books = createBooks(requirement, bookList);
 
         bookList.addBooks(books);
@@ -54,10 +54,13 @@ public class BookListService {
         return savedBookList.getId();
     }
 
-    private static String convert(MultipartFile backImg, S3Uploader s3Uploader){
-        return s3Uploader.getS3(
-            S3Constants.BUCKET_NAME.getSeriesConstant(),
-            S3Constants.FILE_DiRECTORY.getSeriesConstant());
+    private String upload(MultipartFile backImg) {
+        try {
+            return s3Uploader.upload(backImg, "background");
+        }
+        catch (IOException e) {
+            throw new BusinessLogicException(IMAGE_NULL);
+        }
     }
 
     private void addMapping(List<Book> books,
@@ -327,6 +330,7 @@ public class BookListService {
             .orElseThrow(() -> new BusinessLogicException(ExceptionCode.LIST_NOT_FOUND));
         return list;
     }
+
 
     //추천 알고리즘=============================================
     public List<BookListDto> getByCount(int offset, int size){

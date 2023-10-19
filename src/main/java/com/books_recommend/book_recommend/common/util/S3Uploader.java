@@ -1,12 +1,10 @@
 package com.books_recommend.book_recommend.common.util;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -23,14 +21,13 @@ import java.util.Optional;
 @Component
 @Service
 public class S3Uploader {
-//    private final AmazonS3Client amazonS3Client;
     private final AmazonS3 amazonS3Client;
 
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    // MultipartFile을 전달받아 File로 전환한 후 S3에 업로드
+// MultipartFile을 전달받아 File로 전환한 후 S3에 업로드
     public String upload(MultipartFile multipartFile, String dirName) throws IOException {
         File uploadFile = convert(multipartFile)
             .orElseThrow(() -> new IllegalArgumentException("MultipartFile -> File 전환 실패"));

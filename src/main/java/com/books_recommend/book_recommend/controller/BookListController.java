@@ -28,7 +28,6 @@ import static com.books_recommend.book_recommend.controller.BookListController.R
 class BookListController {
     private final BookListService service;
 
-    //https://emoney96.tistory.com/258
     @PostMapping
     ApiResponse<CreateResponse> createBookList(@RequestPart @Valid CreateRequest request,
                                                @RequestPart MultipartFile backImg) {
@@ -46,8 +45,6 @@ class BookListController {
         String content,
 
         String hashTag, //hashTag 선택
-
-//        MultipartFile backImg, //backImg 선택
 
         @NotEmpty(message = "책 정보를 입력해 주세요.")
         List<BookRequest> books

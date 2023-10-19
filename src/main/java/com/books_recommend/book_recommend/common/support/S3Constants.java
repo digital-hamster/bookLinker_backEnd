@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum S3Constants {
 
-    FILE_DiRECTORY("background/"), //image.png"
+    FILE_DiRECTORY("background/test.jpg"), //image.png"
 
     BUCKET_NAME("book-linker-bucket");
 
