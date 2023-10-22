@@ -44,7 +44,7 @@ public class S3Uploader {
         return uploadImageUrl;      // 업로드된 파일의 S3 URL 주소 반환
     }
 
-    private String putS3(File uploadFile, String fileName) {
+    public String putS3(File uploadFile, String fileName) {
         amazonS3Client.putObject(
             new PutObjectRequest(bucket, fileName, uploadFile)
                 .withCannedAcl(CannedAccessControlList.PublicRead)	// PublicRead 권한으로 업로드 됨
@@ -64,7 +64,7 @@ public class S3Uploader {
         }
     }
 
-    private Optional<File> convert(MultipartFile file) throws  IOException {
+    public Optional<File> convert(MultipartFile file) throws  IOException {
         File convertFile = new File(file.getOriginalFilename());
         if(convertFile.createNewFile()) {
             try (FileOutputStream fos = new FileOutputStream(convertFile)) {

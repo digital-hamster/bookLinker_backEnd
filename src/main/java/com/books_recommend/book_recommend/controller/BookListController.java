@@ -229,10 +229,11 @@ class BookListController {
     ){}
 
     @PutMapping("/{bookListId}")
-    ApiResponse<UpdateResponse> update(@RequestBody @Valid UpdateRequest request,
+    ApiResponse<UpdateResponse> update(@RequestPart @Valid UpdateRequest request,
+                                       @RequestPart MultipartFile backImg,
                                        @PathVariable Long bookListId){
 
-        var updatedId = service.update(request.toRequirement(), bookListId);
+        var updatedId = service.update(request.toRequirement(backImg), bookListId);
         var response = new UpdateResponse(updatedId);
 
         return ApiResponse.success(response);
@@ -246,12 +247,10 @@ class BookListController {
 
         String hashTag,
 
-        String backImg,
-
         @NotEmpty(message = "책 정보를 입력해 주세요.")
         List<UpdateRequest.UpdateBookRequest> books
     ){
-        private BookListService.UpdateRequirement toRequirement() {
+        private BookListService.UpdateRequirement toRequirement(MultipartFile backImg) {
             var booksRequirements = books.stream()
                 .map(books -> new BookListService.UpdateRequirement.BookRequirement(
                     books.title,

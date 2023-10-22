@@ -3,6 +3,7 @@ package com.books_recommend.book_recommend.service;
 import com.books_recommend.book_recommend.auth.util.SecurityUtil;
 import com.books_recommend.book_recommend.common.exception.BusinessLogicException;
 import com.books_recommend.book_recommend.common.exception.ExceptionCode;
+import com.books_recommend.book_recommend.common.support.S3Constants;
 import com.books_recommend.book_recommend.common.util.S3Uploader;
 import com.books_recommend.book_recommend.dto.BookDto;
 import com.books_recommend.book_recommend.dto.BookListDto;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -245,7 +247,7 @@ public class BookListService {
                        Long bookListId) {
         var member = memberService.findMember();
 
-        BookList list = findBookListById(bookListId);
+        var list = findBookListById(bookListId);
 
         valifyList(list);
 
@@ -253,17 +255,18 @@ public class BookListService {
             throw new BusinessLogicException(ExceptionCode.IS_NOT_WRITER);
         }
 
-        var updateContent = fromRequirement(requirement, member);
-
-        var books = bookRepository.findByBookListId(bookListId);
-        var updateBooksContent = fromRequirement(requirement, list);
-
-
         if(!Objects.equals(member.getId(), list.getMemberId())){
             throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_WRITER);
         }
 
-        list.update(updateContent);
+        var updateImg = change(requirement.backImg);
+//        var updateContent = fromRequirement(requirement, member, updateImg);
+
+        var books = bookRepository.findByBookListId(bookListId);
+        var updateBooksContent = fromRequirement(requirement, list);
+
+        update(list, requirement, updateImg);
+
         //books update
         IntStream.range(0, books.size())
             .forEach(i -> books.get(i).update(updateBooksContent.get(i)));
@@ -274,12 +277,34 @@ public class BookListService {
         return list.getId();
     }
 
-    private static BookList fromRequirement(UpdateRequirement requirement, Member member) {
+    private void update(BookList bookList, UpdateRequirement requirement, String backImg){
+        bookList.setTitle(requirement.title);
+        bookList.setContent(requirement.content);
+        bookList.setHashTag(requirement.hashTag);
+        bookList.setImg(backImg);
+    }
+
+    private String change(MultipartFile backImg) {
+        try {
+            Optional<File> convertedFile = s3Uploader.convert(backImg);
+
+            if (convertedFile.isPresent()) {
+                String fileName = S3Constants.FILE_DiRECTORY.getSeriesConstant() + "/" + convertedFile.get().getName();
+                return s3Uploader.putS3(convertedFile.get(), fileName);
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static BookList fromRequirement(UpdateRequirement requirement, Member member, String backImg) {
         return new BookList(
             requirement.title,
             requirement.content,
             requirement.hashTag,
-            requirement.backImg,
+            backImg,
             member.getId()
         );
     }
@@ -304,7 +329,7 @@ public class BookListService {
         String title,
         String content,
         String hashTag,
-        String backImg,
+        MultipartFile backImg,
         List<UpdateRequirement.BookRequirement> books
     ) {
 

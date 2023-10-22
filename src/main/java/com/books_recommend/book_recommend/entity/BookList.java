@@ -1,8 +1,6 @@
 package com.books_recommend.book_recommend.entity;
 
 import com.books_recommend.book_recommend.common.entity.BaseTimeEntity;
-import com.books_recommend.book_recommend.service.BookListService;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -70,20 +68,24 @@ public class BookList extends BaseTimeEntity{
         this.deletedAt = LocalDateTime.now();
     }
 
-    public void update(BookList list){
-//        this.books = list.getBooks();
-        this.title = list.title;
-        this.content = list.content;
-        this.hashTag = list.hashTag;
-        this.backImg = list.backImg;
-    }
-
     public void incrementCount(){
         this.count++;
     }
 
     public void setImg(String backImg){
         this.backImg = backImg;
+    }
+
+    public void setTitle(String title){
+        this.title = title;
+    }
+
+    public void setContent(String content){
+        this.content = content;
+    }
+
+    public void setHashTag(String hashTag){
+        this.hashTag = hashTag;
     }
 }
 
