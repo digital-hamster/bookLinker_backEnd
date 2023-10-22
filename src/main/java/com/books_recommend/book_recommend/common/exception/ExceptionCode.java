@@ -22,6 +22,8 @@ import lombok.Getter;
         MEMBER_NOT_DELETE_LIST("리스트를 삭제할 수 없는 사용자 입니다."),
         IS_NOT_WRITER("작성자 본인이 아닙니다"),
         LIST_ALREADY_DELETED("이미 삭제된 리스트 입니다."),
+        IMAGE_NULL("이미지 업로드에 실패했습니다."),
+        IMAGE_CONVERT_FAIL("이미지 변환에 실패했습니다."),
 
         //Member
         MEMBER_NOT_FOUND("존재하지 않는 사용자 입니다"),

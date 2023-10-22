@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,8 +29,9 @@ class BookListController {
     private final BookListService service;
 
     @PostMapping
-    ApiResponse<CreateResponse> createBookList(@RequestBody @Valid CreateRequest request) {
-        var bookListId = service.create(request.toCreateRequirement());
+    ApiResponse<CreateResponse> createBookList(@RequestPart @Valid CreateRequest request,
+                                               @RequestPart MultipartFile backImg) {
+        var bookListId = service.create(request.toCreateRequirement(backImg));
 
         var response = new CreateResponse(bookListId);
         return ApiResponse.success(response);
@@ -44,12 +46,10 @@ class BookListController {
 
         String hashTag, //hashTag 선택
 
-        String backImg, //backImg 선택
-
         @NotEmpty(message = "책 정보를 입력해 주세요.")
         List<BookRequest> books
     ) {
-        private BookListService.CreateRequirement toCreateRequirement() {
+        private BookListService.CreateRequirement toCreateRequirement(MultipartFile backImg) {
             var booksRequirements = books.stream()
                 .map(books -> new BookListService.CreateRequirement.BookRequirement(
                     books.title,
@@ -229,10 +229,11 @@ class BookListController {
     ){}
 
     @PutMapping("/{bookListId}")
-    ApiResponse<UpdateResponse> update(@RequestBody @Valid UpdateRequest request,
+    ApiResponse<UpdateResponse> update(@RequestPart @Valid UpdateRequest request,
+                                       @RequestPart MultipartFile backImg,
                                        @PathVariable Long bookListId){
 
-        var updatedId = service.update(request.toRequirement(), bookListId);
+        var updatedId = service.update(request.toRequirement(backImg), bookListId);
         var response = new UpdateResponse(updatedId);
 
         return ApiResponse.success(response);
@@ -246,12 +247,10 @@ class BookListController {
 
         String hashTag,
 
-        String backImg,
-
         @NotEmpty(message = "책 정보를 입력해 주세요.")
         List<UpdateRequest.UpdateBookRequest> books
     ){
-        private BookListService.UpdateRequirement toRequirement() {
+        private BookListService.UpdateRequirement toRequirement(MultipartFile backImg) {
             var booksRequirements = books.stream()
                 .map(books -> new BookListService.UpdateRequirement.BookRequirement(
                     books.title,
