@@ -73,3 +73,12 @@ server:
     encoding:
       charset: UTF-8
       force: true
+
+logging:
+  file:
+    name: error.log # 로그 파일의 경로 및 이름
+  level:
+    root: INFO # 루트 로거의 로그 레벨
+    org.springframework.security: DEBUG # Spring Security 패키지의 로그 레벨
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" # 콘솔 출력 로그 패턴
