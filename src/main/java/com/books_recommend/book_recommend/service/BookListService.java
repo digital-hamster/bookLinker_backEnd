@@ -61,7 +61,7 @@ public class BookListService {
             return s3Uploader.upload(backImg, "background");
         }
         catch (IOException e) {
-            throw new BusinessLogicException(IMAGE_NULL);
+            return null;
         }
     }
 
