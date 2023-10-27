@@ -45,7 +45,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 "/members",
                 "/books",
                 "/favorites",
-                "/test/unheader"
+                "/test/unheaders"
             ));
 
 
