@@ -19,6 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -61,7 +64,6 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(
                 authorize -> authorize
-//                    .requestMatchers("members/authenticate", "/members", "/members/udpate", "/books").permitAll()
                     .requestMatchers(HttpMethod.POST, "/members/authenticate", "/members", "/favorites", "/booklists").permitAll()
                     .requestMatchers(HttpMethod.GET, "/books", "/booklists/search", "/booklists/**", "/comments/**", "/favorites/**", "/members/favorites", "/booklists/counts", "/booklists/favorites", "/booklists/comments").permitAll()
                     .requestMatchers(HttpMethod.PUT, "/booklists","booklists/**", "/comments/**").permitAll()
@@ -78,18 +80,21 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
 
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-        //제일 먼저 필터를 돈다 (모든 토큰 요청은 해당 필터를 제일 먼저 거침)
+        http
+            .addFilterBefore(new CorsFilter(corsConfigurationSource()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtRequestFilter, CorsFilter.class);
+        //필터 순서 정의: CorsFilter > jwtRequestFilter > UsernamePasswordAuthenticationFilter
 
         return http.build();
     }
 
 
-    @Bean //cors 관련 로직
+    @Bean //cors 설정 빈등록
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("*");
-        configuration.addAllowedHeader("*");
+//        configuration.addAllowedHeader("*");
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "authorization")); //응답헤더
         configuration.addAllowedMethod("*");
         configuration.addExposedHeader("authorization");
         configuration.setAllowCredentials(true);
