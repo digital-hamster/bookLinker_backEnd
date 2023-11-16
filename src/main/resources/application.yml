@@ -74,12 +74,17 @@ cloud:
     region:
       static: ap-northeast-2
 
-#인증 에러핸들러 한글 설정
+#인증 에러핸들러 한글 설정 + https
 server:
   servlet:
     encoding:
       charset: UTF-8
       force: true
+#  port: 443
+#  ssl:
+#    key-store: classpath:ssl/keystore.p12
+#    key-store-type: PKCS12
+#    key-store-password: {keystorePW}
 
 logging:
   file:
