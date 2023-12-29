@@ -57,12 +57,7 @@ public class BookListService {
     }
 
     private String upload(MultipartFile backImg) {
-        try {
             return s3Uploader.upload(backImg, "background");
-        }
-        catch (IOException e) {
-            return null;
-        }
     }
 
     private void addMapping(List<Book> books,
@@ -285,18 +280,11 @@ public class BookListService {
     }
 
     private String change(MultipartFile backImg) {
-        try {
-            Optional<File> convertedFile = s3Uploader.convert(backImg);
-
-            if (convertedFile.isPresent()) {
-                String fileName = S3Constants.FILE_DiRECTORY.getSeriesConstant() + "/" + convertedFile.get().getName();
-                return s3Uploader.putS3(convertedFile.get(), fileName);
-            } else {
+            if (backImg == null) {
                 return null;
+            } else {
+                return upload(backImg);
             }
-        } catch (IOException e) {
-            return null;
-        }
     }
 
     private static BookList fromRequirement(UpdateRequirement requirement, Member member, String backImg) {
