@@ -66,7 +66,7 @@ public class SecurityConfig {
                 authorize -> authorize
                     .requestMatchers(HttpMethod.POST, "/members/authenticate", "/members", "/favorites", "/booklists").permitAll()
                     .requestMatchers(HttpMethod.POST, "/test/unheaders", "/test/headers").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/books", "/booklists/search", "/booklists/**", "/comments/**", "/favorites/**", "/members/favorites", "/booklists/counts", "/booklists/favorites", "/booklists/comments").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/books", "/booklists/search", "/booklists/**", "/comments/**", "/favorites/**", "/members/favorites", "/booklists/counts", "/booklists/favorites", "/booklists/comments", "/members/oauth-login", "/members/oauth-login/**").permitAll()
                     .requestMatchers(HttpMethod.PUT, "/booklists","booklists/**", "/comments/**").permitAll()
                     .requestMatchers(HttpMethod.DELETE, "booklists/**", "/comments/**", "favorites/**").permitAll()
                     .anyRequest().authenticated()
