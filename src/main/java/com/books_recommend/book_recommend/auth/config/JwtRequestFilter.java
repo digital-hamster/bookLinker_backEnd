@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
     //요청당 한번의 filter를 수행하도록 doFilterInternal() 메서드를 구현하는 게 해당 ~ 클래스 목적
     //OncePerRequestFilter: 여러 HTTP 요청 간에 공통적으로 수행해야 하는 작업을 구현할 수 있음
@@ -28,14 +29,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private final JwtUserDetailsService jwtUserDetailService;
     private final JwtTokenizer jwtTokenizer;
 
-    @Autowired
-    public JwtRequestFilter(
-        JwtUserDetailsService jwtUserDetailService,
-        JwtTokenizer jwtTokenizer
-    ) {
-        this.jwtUserDetailService = jwtUserDetailService;
-        this.jwtTokenizer = jwtTokenizer;
-    }
+//    @Autowired
+//    public JwtRequestFilter(
+//        JwtUserDetailsService jwtUserDetailService,
+//        JwtTokenizer jwtTokenizer
+//    ) {
+//        this.jwtUserDetailService = jwtUserDetailService;
+//        this.jwtTokenizer = jwtTokenizer;
+//    }
 
     //JWT 인증을 건너뛸 URL 패턴 정의
     private static final List<String> EXCLUDE_URL =
